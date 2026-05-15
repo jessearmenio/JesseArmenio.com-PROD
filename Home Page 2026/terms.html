@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Legal | Jesse Armenio</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-0: #02050b;
+            --bg-1: #07111d;
+            --bg-2: #0c1828;
+            --bg-3: #11233a;
+            --panel: rgba(10, 18, 30, 0.78);
+            --panel-strong: rgba(10, 18, 30, 0.92);
+            --border: rgba(160, 198, 255, 0.14);
+            --border-strong: rgba(173, 208, 255, 0.24);
+            --text: #eef5ff;
+            --text-soft: rgba(225, 235, 248, 0.82);
+            --text-muted: rgba(210, 223, 241, 0.58);
+            --accent: #8eb7ff;
+            --accent-2: #c2d9ff;
+            --shadow: 0 20px 70px rgba(0, 0, 0, 0.32);
+            --radius-xl: 32px;
+            --radius-lg: 24px;
+            --content-width: min(980px, calc(100% - 40px));
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            margin: 0;
+            color: var(--text);
+            font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background:
+                radial-gradient(circle at 20% 10%, rgba(58, 107, 202, 0.18), transparent 24%),
+                radial-gradient(circle at 80% 20%, rgba(92, 162, 255, 0.10), transparent 22%),
+                radial-gradient(circle at center, #0f1a2b 0%, #050910 62%, #02050b 100%);
+            overflow-x: hidden;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background-image:
+                linear-gradient(rgba(173, 208, 255, 0.035) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(173, 208, 255, 0.035) 1px, transparent 1px);
+            background-size: 64px 64px;
+            mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.7), transparent 78%);
+            z-index: 0;
+        }
+
+        .page-shell {
+            position: relative;
+            z-index: 2;
+            min-height: 100vh;
+            padding: 48px 0;
+        }
+
+        .legal-wrap {
+            width: var(--content-width);
+            margin: 0 auto;
+        }
+
+        .top-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 18px;
+            margin-bottom: 34px;
+            color: var(--text-soft);
+        }
+
+        .brand-link {
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            color: var(--text);
+        }
+
+        .back-link {
+            padding: 10px 16px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-soft);
+            font-weight: 700;
+            transition: transform 180ms ease, background-color 180ms ease;
+        }
+
+        .back-link:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.06);
+            color: white;
+        }
+
+        .legal-panel {
+            background: linear-gradient(180deg, rgba(12, 21, 34, 0.88), rgba(8, 14, 24, 0.76));
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            padding: clamp(24px, 4vw, 44px);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(12px);
+        }
+
+        .eyebrow {
+            margin: 0 0 16px;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.28em;
+            font-size: 0.78rem;
+            font-weight: 800;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: clamp(2.35rem, 6vw, 4.5rem);
+            line-height: 0.95;
+            letter-spacing: -0.06em;
+            font-weight: 800;
+        }
+
+        .updated {
+            margin: 18px 0 0;
+            color: var(--text-muted);
+            line-height: 1.7;
+            font-size: 0.98rem;
+        }
+
+        .divider {
+            width: 100%;
+            margin: 30px 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            opacity: 0.92;
+        }
+
+        .divider span {
+            display: block;
+            height: 1px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(173, 208, 255, 0.42), rgba(255, 255, 255, 0));
+        }
+
+        .divider span:nth-child(1),
+        .divider span:nth-child(5) {
+            width: 10%;
+        }
+
+        .divider span:nth-child(2),
+        .divider span:nth-child(4) {
+            width: 16%;
+        }
+
+        .divider span:nth-child(3) {
+            width: 26%;
+        }
+
+        .legal-content {
+            color: var(--text-soft);
+            line-height: 1.85;
+            font-size: 1rem;
+        }
+
+        .legal-content h2 {
+            margin: 34px 0 12px;
+            color: var(--text);
+            font-size: clamp(1.35rem, 3vw, 2rem);
+            letter-spacing: -0.04em;
+            line-height: 1.1;
+        }
+
+        .legal-content h3 {
+            margin: 26px 0 10px;
+            color: var(--accent-2);
+            font-size: 1.08rem;
+        }
+
+        .legal-content p {
+            margin: 0 0 18px;
+        }
+
+        .legal-content ul,
+        .legal-content ol {
+            margin: 0 0 22px;
+            padding-left: 24px;
+        }
+
+        .legal-content li {
+            margin-bottom: 10px;
+        }
+
+        .legal-content strong {
+            color: var(--text);
+        }
+
+        .legal-content a {
+            color: var(--accent-2);
+            border-bottom: 1px solid rgba(194, 217, 255, 0.3);
+        }
+
+        .legal-content a:hover {
+            color: white;
+            border-bottom-color: white;
+        }
+
+        .note-card {
+            margin: 24px 0;
+            padding: 18px 20px;
+            border-radius: var(--radius-lg);
+            background: rgba(255, 255, 255, 0.035);
+            border: 1px solid var(--border);
+            color: var(--text-soft);
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 28px;
+            color: var(--text-muted);
+            font-size: 0.92rem;
+            line-height: 1.7;
+        }
+
+        .footer a {
+            color: var(--accent-2);
+        }
+
+        @media (max-width: 700px) {
+            .page-shell {
+                padding: 24px 0;
+            }
+
+            .legal-wrap {
+                width: min(100%, calc(100% - 24px));
+            }
+
+            .top-nav {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .legal-panel {
+                border-radius: 22px;
+            }
+
+            .divider {
+                margin: 24px 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="page-shell">
+        <div class="legal-wrap">
+
+            <nav class="top-nav">
+                <a href="https://www.jessearmenio.com" class="brand-link">JesseArmenio.com</a>
+                <a href="https://www.jessearmenio.com" class="back-link">← Back Home</a>
+            </nav>
+
+            <section class="legal-panel">
+                <p class="eyebrow">Legal</p>
+
+                <!-- Change this to "Terms of Use" or "Privacy Policy" -->
+                <h1>Terms of Use</h1>
+
+                <p class="updated">
+                    Last updated: 06/06/2022
+                </p>
+
+                <div class="divider">
+                    <span></span><span></span><span></span><span></span><span></span>
+                </div>
+
+                <div class="legal-content">
+
+                    <div class="note-card">
+                        <strong>Note:</strong> These Terms of Use constitute a legally binding agreement made between
+                        you, whether personally or on behalf of an entity (“you”) and jessearmenio.com (“we,” “us” or
+                        “our”), concerning your access to and use of the jessearmenio.com website as well as any other
+                        media form, media channel, mobile website or mobile application related, linked, or otherwise
+                        connected thereto (collectively, the “Site”). You agree that by accessing the Site, you have
+                        read, understood, and agree to be bound by all of these Terms of Use. If you do not agree with
+                        all of these Terms of Use, then you are expressly prohibited from using the Site and you must
+                        discontinue use immediately. Supplemental Terms of Use or documents that may be posted on the
+                        Site from time to time are hereby expressly incorporated herein by reference. We reserve the
+                        right, in our sole discretion, to make changes or modifications to these Terms of Use at any
+                        time and for any reason. We will alert you about any changes by updating the “Last updated” date
+                        of these Terms of Use, and you waive any right to receive specific notice of each such change.
+                        It is your responsibility to periodically review these Terms of Use to stay informed of updates.
+                        You will be subject to, and will be deemed to have been made aware of and to have accepted, the
+                        changes in any revised Terms of Use by your continued use of the Site after the date such
+                        revised Terms of Use are posted. The information provided on the Site is not intended for
+                        distribution to or use by any person or entity in any jurisdiction or country where such
+                        distribution or use would be contrary to law or regulation or which would subject us to any
+                        registration requirement within such jurisdiction or country. Accordingly, those persons who
+                        choose to access the Site from other locations do so on their own initiative and are solely
+                        responsible for compliance with local laws, if and to the extent local laws are applicable. The
+                        Site is intended for users who are at least 13 years of age. All users who are minors in the
+                        jurisdiction in which they reside (generally under the age of 18) must have the permission of,
+                        and be directly supervised by, their parent or guardian to use the Site. If you are a minor, you
+                        must have your parent or guardian read and agree to these Terms of Use prior to you using the
+                        Site.
+                    </div>
+
+                    <h2>1. INTELLECTUAL PROPERTY RIGHTS</h2>
+                    <p>
+                        Unless otherwise indicated, the Site is our proprietary property and all source code, databases,
+                        functionality, software, website designs, audio, video, text, photographs, and graphics on the
+                        Site (collectively, the “Content”) and the trademarks, service marks, and logos contained
+                        therein (the “Marks”) are owned or controlled by us or licensed to us, and are protected by
+                        copyright and trademark laws and various other intellectual property rights and unfair
+                        competition laws of the United States, foreign jurisdictions, and international conventions. The
+                        Content and the Marks are provided on the Site “AS IS” for your information and personal use
+                        only. Except as expressly provided in these Terms of Use, no part of the Site and no Content or
+                        Marks may be copied, reproduced, aggregated, republished, uploaded, posted, publicly displayed,
+                        encoded, translated, transmitted, distributed, sold, licensed, or otherwise exploited for any
+                        commercial purpose whatsoever, without our express prior written permission. Provided that you
+                        are eligible to use the Site, you are granted a limited license to access and use the Site and
+                        to download or print a copy of any portion of the Content to which you have properly gained
+                        access solely for your personal, non-commercial use. We reserve all rights not expressly granted
+                        to you in and to the Site, the Content and the Marks.
+                    </p>
+
+                    <h2>2. USER REPRESENTATIONS</h2>
+                    <p>
+                        By using the Site, you represent and warrant that:
+                        If you provide any information that is untrue, inaccurate, not current, or incomplete, we have
+                        the right to suspend or terminate your account and refuse any and all current or future use of
+                        the Site (or any portion thereof).
+                    </p>
+
+                    <ul>
+                        <li>
+                            <strong>(1)</strong> all registration information you submit will be true, accurate,
+                            current, and complete;
+                        </li>
+
+                        <li>
+                            <strong>(2)</strong> you will maintain the accuracy of such information and promptly update
+                            such registration information as necessary;
+                        </li>
+
+                        <li>
+                            <strong>(3)</strong> you have the legal capacity and you agree to comply with these Terms of
+                            Use;
+                        </li>
+
+                        <li>
+                            <strong>(4)</strong> not a minor in the jurisdiction in which you reside [, or if a minor,
+                            you have received parental permission to use the Site];
+                        </li>
+
+                        <li>
+                            <strong>(5)</strong> you will not access the Site through automated or non-human means,
+                            whether through a bot, script, or otherwise;
+                        </li>
+
+                        <li>
+                            <strong>(6)</strong> you will not use the Site for any illegal or unauthorized purpose;
+                        </li>
+
+                        <li>
+                            <strong>(7)</strong> your use of the Site will not violate any applicable law or regulation.
+                        </li>
+                    </ul>
+
+                    <h2>3. PROHIBITED ACTIVITIES</h2>
+                    <p>You may not access or use the Site for any purpose other than that for which we make the Site
+                        available. The Site may not be used in connection with any commercial endeavors except those
+                        that are specifically endorsed or approved by us. As a user of the Site, you agree not to: </p>
+                    <ul>
+                        <li>
+                            <strong>1.</strong> systematically retrieve data or other content from the Site to create or
+                            compile, directly or indirectly, a collection, compilation, database, or directory without
+                            written permission from us.
+                        </li>
+
+                        <li>
+                            <strong>2.</strong> make any unauthorized use of the Site, including collecting usernames
+                            and/or email addresses of users by electronic or other means for the purpose of sending
+                            unsolicited email, or creating user accounts by automated means or under false pretenses.
+                        </li>
+
+                        <li>
+                            <strong>3.</strong> use a buying agent or purchasing agent to make purchases on the Site.
+                        </li>
+
+                        <li>
+                            <strong>4.</strong> use the Site to advertise or offer to sell goods and services.
+                        </li>
+
+                        <li>
+                            <strong>5.</strong> circumvent, disable, or otherwise interfere with security-related
+                            features of the Site, including features that prevent or restrict the use or copying of any
+                            Content or enforce limitations on the use of the Site and/or the Content contained therein.
+                        </li>
+
+                        <li>
+                            <strong>6.</strong> engage in unauthorized framing of or linking to the Site.
+                        </li>
+
+                        <li>
+                            <strong>7.</strong> trick, defraud, or mislead us and other users, especially in any attempt
+                            to learn sensitive account information such as user passwords.
+                        </li>
+
+                        <li>
+                            <strong>8.</strong> make improper use of our support services or submit false reports of
+                            abuse or misconduct.
+                        </li>
+
+                        <li>
+                            <strong>9.</strong> engage in any automated use of the system, such as using scripts to send
+                            comments or messages, or using any data mining, robots, or similar data gathering and
+                            extraction tools.
+                        </li>
+
+                        <li>
+                            <strong>10.</strong> interfere with, disrupt, or create an undue burden on the Site or the
+                            networks or services connected to the Site.
+                        </li>
+
+                        <li>
+                            <strong>11.</strong> attempt to impersonate another user or person or use the username of
+                            another user.
+                        </li>
+
+                        <li>
+                            <strong>12.</strong> sell or otherwise transfer your profile.
+                        </li>
+
+                        <li>
+                            <strong>13.</strong> use any information obtained from the Site in order to harass, abuse,
+                            or harm another person.
+                        </li>
+
+                        <li>
+                            <strong>14.</strong> use the Site as part of any effort to compete with us or otherwise use
+                            the Site and/or the Content for any revenue-generating endeavor or commercial enterprise.
+                        </li>
+
+                        <li>
+                            <strong>15.</strong> decipher, decompile, disassemble, or reverse engineer any of the
+                            software comprising or in any way making up a part of the Site.
+                        </li>
+
+                        <li>
+                            <strong>16.</strong> attempt to bypass any measures of the Site designed to prevent or
+                            restrict access to the Site, or any portion of the Site.
+                        </li>
+
+                        <li>
+                            <strong>17.</strong> harass, annoy, intimidate, or threaten any of our employees or agents
+                            engaged in providing any portion of the Site to you.
+                        </li>
+
+                        <li>
+                            <strong>18.</strong> delete the copyright or other proprietary rights notice from any
+                            Content.
+                        </li>
+
+                        <li>
+                            <strong>19.</strong> copy or adapt the Site’s software, including but not limited to Flash,
+                            PHP, HTML, JavaScript, or other code.
+                        </li>
+
+                        <li>
+                            <strong>20.</strong> upload or transmit (or attempt to upload or to transmit) viruses,
+                            Trojan horses, or other material, including excessive use of capital letters and spamming
+                            (continuous posting of repetitive text), that interferes with any party’s uninterrupted use
+                            and enjoyment of the Site or modifies, impairs, disrupts, alters, or interferes with the
+                            use, features, functions, operation, or maintenance of the Site.
+                        </li>
+
+                        <li>
+                            <strong>21.</strong> upload or transmit (or attempt to upload or to transmit) any material
+                            that acts as a passive or active information collection or transmission mechanism, including
+                            without limitation, clear graphics interchange formats (“gifs”), 1×1 pixels, web bugs,
+                            cookies, or other similar devices (sometimes referred to as “spyware” or “passive collection
+                            mechanisms” or “pcms”).
+                        </li>
+
+                        <li>
+                            <strong>22.</strong> except as may be the result of standard search engine or Internet
+                            browser usage, use, launch, develop, or distribute any automated system, including without
+                            limitation, any spider, robot, cheat utility, scraper, or offline reader that accesses the
+                            Site, or using or launching any unauthorized script or other software.
+                        </li>
+
+                        <li>
+                            <strong>23.</strong> disparage, tarnish, or otherwise harm, in our opinion, us and/or the
+                            Site.
+                        </li>
+
+                        <li>
+                            <strong>24.</strong> use the Site in a manner inconsistent with any applicable laws or
+                            regulations.
+                        </li>
+                    </ul>
+
+                    <h2>4. USER GENERATED CONTRIBUTIONS
+                    </h2>
+                    <p>
+                        The Site may invite you to chat, contribute to, or participate in blogs, message boards, online
+                        forums, and other functionality, and may provide you with the opportunity to create, submit,
+                        post, display, transmit, perform, publish, distribute, or broadcast content and materials to us
+                        or on the Site, including but not limited to text, writings, video, audio, photographs,
+                        graphics, comments, suggestions, or personal information or other material (collectively,
+                        “Contributions”). Contributions may be viewable by other users of the Site and through
+                        third-party websites. As such, any Contributions you transmit may be treated as non-confidential
+                        and non-proprietary. When you create or make available any Contributions, you thereby represent
+                        and warrant that:
+                    </p>
+                    <ul>
+                        <li>
+                            <strong>1.</strong> the creation, distribution, transmission, public display, or
+                            performance, and the accessing, downloading, or copying of your Contributions do not and
+                            will not infringe the proprietary rights, including but not limited to the copyright,
+                            patent, trademark, trade secret, or moral rights of any third party.
+                        </li>
+
+                        <li>
+                            <strong>2.</strong> you are the creator and owner of or have the necessary licenses, rights,
+                            consents, releases, and permissions to use and to authorize us, the Site, and other users of
+                            the Site to use your Contributions in any manner contemplated by the Site and these Terms of
+                            Use.
+                        </li>
+
+                        <li>
+                            <strong>3.</strong> you have the written consent, release, and/or permission of each and
+                            every identifiable individual person in your Contributions to use the name or likeness of
+                            each and every such identifiable individual person to enable inclusion and use of your
+                            Contributions in any manner contemplated by the Site and these Terms of Use.
+                        </li>
+
+                        <li>
+                            <strong>4.</strong> your Contributions are not false, inaccurate, or misleading.
+                        </li>
+
+                        <li>
+                            <strong>5.</strong> your Contributions are not unsolicited or unauthorized advertising,
+                            promotional materials, pyramid schemes, chain letters, spam, mass mailings, or other forms
+                            of solicitation.
+                        </li>
+
+                        <li>
+                            <strong>6.</strong> your Contributions are not obscene, lewd, lascivious, filthy, violent,
+                            harassing, libelous, slanderous, or otherwise objectionable (as determined by us).
+                        </li>
+
+                        <li>
+                            <strong>7.</strong> your Contributions do not ridicule, mock, disparage, intimidate, or
+                            abuse anyone.
+                        </li>
+
+                        <li>
+                            <strong>8.</strong> your Contributions do not advocate the violent overthrow of any
+                            government or incite, encourage, or threaten physical harm against another.
+                        </li>
+
+                        <li>
+                            <strong>9.</strong> your Contributions do not violate any applicable law, regulation, or
+                            rule.
+                        </li>
+
+                        <li>
+                            <strong>10.</strong> your Contributions do not violate the privacy or publicity rights of
+                            any third party.
+                        </li>
+
+                        <li>
+                            <strong>11.</strong> your Contributions do not contain any material that solicits personal
+                            information from anyone under the age of 18 or exploits people under the age of 18 in a
+                            sexual or violent manner.
+                        </li>
+
+                        <li>
+                            <strong>12.</strong> your Contributions do not violate any federal or state law concerning
+                            child pornography, or otherwise intended to protect the health or well-being of minors.
+                        </li>
+
+                        <li>
+                            <strong>13.</strong> your Contributions do not include any offensive comments that are
+                            connected to race, national origin, gender, sexual preference, or physical handicap.
+                        </li>
+
+                        <li>
+                            <strong>14.</strong> your Contributions do not otherwise violate, or link to material that
+                            violates, any provision of these Terms of Use, or any applicable law or regulation.
+                        </li>
+
+                        <p>
+                            Any use of the Site in violation of the foregoing violates these Terms of Use and may result
+                            in, among other things, termination or suspension of your rights to use the Site.
+                        </p>
+                    </ul>
+                    <h2>5. CONTRIBUTION LICENSE</h2>
+                    <p>
+                        By posting your Contributions to any part of the Site [or making Contributions accessible to the
+                        Site by linking your account from the Site to any of your social networking accounts], you
+                        automatically grant, and you represent and warrant that you have the right to grant, to us an
+                        unrestricted, unlimited, irrevocable, perpetual, non-exclusive, transferable, royalty-free,
+                        fully-paid, worldwide right, and license to host, use, copy, reproduce, disclose, sell, resell,
+                        publish, broadcast, retitle, archive, store, cache, publicly perform, publicly display,
+                        reformat, translate, transmit, excerpt (in whole or in part), and distribute such Contributions
+                        (including, without limitation, your image and voice) for any purpose, commercial, advertising,
+                        or otherwise, and to prepare derivative works of, or incorporate into other works, such
+                        Contributions, and grant and authorize sublicenses of the foregoing. The use and distribution
+                        may occur in any media formats and through any media channels. This license will apply to any
+                        form, media, or technology now known or hereafter developed, and includes our use of your name,
+                        company name, and franchise name, as applicable, and any of the trademarks, service marks, trade
+                        names, logos, and personal and commercial images you provide. You waive all moral rights in your
+                        Contributions, and you warrant that moral rights have not otherwise been asserted in your
+                        Contributions. We do not assert any ownership over your Contributions. You retain full ownership
+                        of all of your Contributions and any intellectual property rights or other proprietary rights
+                        associated with your Contributions. We are not liable for any statements or representations in
+                        your Contributions provided by you in any area on the Site. You are solely responsible for your
+                        Contributions to the Site and you expressly agree to exonerate us from any and all
+                        responsibility and to refrain from any legal action against us regarding your Contributions. We
+                        have the right, in our sole and absolute discretion:
+                    </p>
+                    <ul>
+                        <li>
+                            <strong>(1)</strong> to edit, redact, or otherwise change any Contributions;
+                        </li>
+
+                        <li>
+                            <strong>(2)</strong> to re-categorize any Contributions to place them in more appropriate
+                            locations on the Site; and
+                        </li>
+
+                        <li>
+                            <strong>(3)</strong> to pre-screen or delete any Contributions at any time and for any
+                            reason, without notice.
+                        </li>
+
+                        <p>
+                            We have no obligation to monitor your Contributions.
+                        </p>
+                    </ul>
+                    <h2>6. MOBILE APPLICATION LICENSE</h2>
+                    <p>
+                        Use License If you access the Site via a mobile application, then we grant you a revocable,
+                        non-exclusive, non-transferable, limited right to install and use the mobile application on
+                        wireless electronic devices owned or controlled by you, and to access and use the mobile
+                        application on such devices strictly in accordance with the Terms of Use of this mobile
+                        application license contained in these Terms of Use.</br>
+                        You shall not:
+                    </p>
+                    <ul>
+                        <li>
+                            <strong>(1)</strong> decompile, reverse engineer, disassemble, attempt to derive the source
+                            code of, or decrypt the application;
+                        </li>
+
+                        <li>
+                            <strong>(2)</strong> make any modification, adaptation, improvement, enhancement,
+                            translation, or derivative work from the application;
+                        </li>
+
+                        <li>
+                            <strong>(3)</strong> violate any applicable laws, rules, or regulations in connection with
+                            your access or use of the application;
+                        </li>
+
+                        <li>
+                            <strong>(4)</strong> remove, alter, or obscure any proprietary notice (including any notice
+                            of copyright or trademark) posted by us or the licensors of the application;
+                        </li>
+
+                        <li>
+                            <strong>(5)</strong> use the application for any revenue generating endeavor, commercial
+                            enterprise, or other purpose for which it is not designed or intended;
+                        </li>
+
+                        <li>
+                            <strong>(6)</strong> make the application available over a network or other environment
+                            permitting access or use by multiple devices or users at the same time;
+                        </li>
+
+                        <li>
+                            <strong>(7)</strong> use the application for creating a product, service, or software that
+                            is, directly or indirectly, competitive with or in any way a substitute for the application;
+                        </li>
+
+                        <li>
+                            <strong>(8)</strong> use the application to send automated queries to any website or to send
+                            any unsolicited commercial e-mail;
+                        </li>
+
+                        <li>
+                            <strong>(9)</strong> use any proprietary information or any of our interfaces or our other
+                            intellectual property in the design, development, manufacture, licensing, or distribution of
+                            any applications, accessories, or devices for use with the application.
+                        </li>
+                    </ul>
+                    <h2>7. Apple and Android Devices</h2>
+                    <p>
+                        The following terms apply when you use a mobile application obtained from either the Apple Store
+                        or Google Play (each an “App Distributor”) to access the Site:
+                    </p>
+                    <ul>
+                        <li>
+                            <strong>(1)</strong> the license granted to you for our mobile application is limited to a
+                            non-transferable license to use the application on a device that utilizes the Apple iOS or
+                            Android operating systems, as applicable, and in accordance with the usage rules set forth
+                            in the applicable App Distributor’s terms of use;
+                        </li>
+
+                        <li>
+                            <strong>(2)</strong> we are responsible for providing any maintenance and support services
+                            with respect to the mobile application as specified in the Terms of Use of this mobile
+                            application license contained in these Terms of Use or as otherwise required under
+                            applicable law, and you acknowledge that each App Distributor has no obligation whatsoever
+                            to furnish any maintenance and support services with respect to the mobile application;
+                        </li>
+
+                        <li>
+                            <strong>(3)</strong> in the event of any failure of the mobile application to conform to any
+                            applicable warranty, you may notify the applicable App Distributor, and the App Distributor,
+                            in accordance with its terms and policies, may refund the purchase price, if any, paid for
+                            the mobile application, and to the maximum extent permitted by applicable law, the App
+                            Distributor will have no other warranty obligation whatsoever with respect to the mobile
+                            application;
+                        </li>
+
+                        <li>
+                            <strong>(4)</strong> you represent and warrant that (i) you are not located in a country
+                            that is subject to a U.S. government embargo, or that has been designated by the U.S.
+                            government as a “terrorist supporting” country and (ii) you are not listed on any U.S.
+                            government list of prohibited or restricted parties;
+                        </li>
+
+                        <li>
+                            <strong>(5)</strong> you must comply with applicable third-party terms of agreement when
+                            using the mobile application, e.g., if you have a VoIP application, then you must not be in
+                            violation of their wireless data service agreement when using the mobile application;
+                        </li>
+
+                        <li>
+                            <strong>(6)</strong> you acknowledge and agree that the App Distributors are third-party
+                            beneficiaries of the Terms of Use in this mobile application license contained in these
+                            Terms of Use, and that each App Distributor will have the right (and will be deemed to have
+                            accepted the right) to enforce the Terms of Use in this mobile application license contained
+                            in these Terms of Use against you as a third-party beneficiary thereof.
+                        </li>
+                    </ul>
+                    <h2>8. SOCIAL MEDIA</h2>
+                    <p>
+                        As part of the functionality of the Site, you may link your account with online accounts you
+                        have with third-party service providers (each such account, a “Third-Party Account”) by either:
+                        (1) providing your Third-Party Account login information through the Site; or (2) allowing us to
+                        access your Third-Party Account, as is permitted under the applicable Terms of Use that govern
+                        your use of each Third-Party Account. You represent and warrant that you are entitled to
+                        disclose your Third-Party Account login information to us and/or grant us access to your
+                        Third-Party Account, without breach by you of any of the Terms of Use that govern your use of
+                        the applicable Third-Party Account, and without obligating us to pay any fees or making us
+                        subject to any usage limitations imposed by the third-party service provider of the Third-Party
+                        Account. By granting us access to any Third-Party Accounts, you understand that (1) we may
+                        access, make available, and store (if applicable) any content that you have provided to and
+                        stored in your Third-Party Account (the “Social Network Content”) so that it is available on and
+                        through the Site via your account, including without limitation any friend lists and (2) we may
+                        submit to and receive from your Third-Party Account additional information to the extent you are
+                        notified when you link your account with the Third-Party Account. Depending on the Third-Party
+                        Accounts you choose and subject to the privacy settings that you have set in such Third-Party
+                        Accounts, personally identifiable information that you post to your Third-Party Accounts may be
+                        available on and through your account on the Site. Please note that if a Third-Party Account or
+                        associated service becomes unavailable or our access to such Third-Party Account is terminated
+                        by the third-party service provider, then Social Network Content may no longer be available on
+                        and through the Site. You will have the ability to disable the connection between your account
+                        on the Site and your Third-Party Accounts at any time.
+                        </br></br>
+                        <strong>PLEASE NOTE THAT YOUR RELATIONSHIP WITH THE THIRD-PARTY SERVICE PROVIDERS ASSOCIATED
+                            WITH YOUR THIRD-PARTY ACCOUNTS IS GOVERNED SOLELY BY YOUR AGREEMENT(S) WITH SUCH THIRD-PARTY
+                            SERVICE PROVIDERS.</strong>
+                        </br></br>
+                        We make no effort to review any Social Network Content for any purpose, including but not
+                        limited to, for accuracy, legality, or non-infringement, and we are not responsible for any
+                        Social Network Content. You acknowledge and agree that we may access your email address book
+                        associated with a Third-Party Account and your contacts list stored on your mobile device or
+                        tablet computer solely for purposes of identifying and informing you of those contacts who have
+                        also registered to use the Site. You can deactivate the connection between the Site and your
+                        Third-Party Account by contacting us using the contact information below or through your account
+                        settings (if applicable). We will attempt to delete any information stored on our servers that
+                        was obtained through such Third-Party Account, except the username and profile picture that
+                        become associated with your account.
+                    </p>
+
+                    <h2>9. THIRD-PARTY WEBSITES AND CONTENT</h2>
+                    <p>
+                        The Site may contain (or you may be sent via the Site) links to other websites (“Third-Party
+                        Websites”) as well as articles, photographs, text, graphics, pictures, designs, music, sound,
+                        video, information, applications, software, and other content or items belonging to or
+                        originating from third parties (“Third-Party Content”). Such Third-Party Websites and
+                        Third-Party Content are not investigated, monitored, or checked for accuracy, appropriateness,
+                        or completeness by us, and we are not responsible for any Third-Party Websites accessed through
+                        the Site or any Third-Party Content posted on, available through, or installed from the Site,
+                        including the content, accuracy, offensiveness, opinions, reliability, privacy practices, or
+                        other policies of or contained in the Third-Party Websites or the Third-Party Content. Inclusion
+                        of, linking to, or permitting the use or installation of any Third-Party Websites or any
+                        Third-Party Content does not imply approval or endorsement thereof by us. If you decide to leave
+                        the Site and access the Third-Party Websites or to use or install any Third-Party Content, you
+                        do so at your own risk, and you should be aware these Terms of Use no longer govern. You should
+                        review the applicable terms and policies, including privacy and data gathering practices, of any
+                        website to which you navigate from the Site or relating to any applications you use or install
+                        from the Site.
+                        Any purchases you make through Third-Party Websites will be through other websites and from
+                        other companies, and we take no responsibility whatsoever in relation to such purchases which
+                        are exclusively between you and the applicable third party. You agree and acknowledge that we do
+                        not endorse the products or services offered on Third-Party Websites and you shall hold us
+                        harmless from any harm caused by your purchase of such products or services. Additionally, you
+                        shall hold us harmless from any losses sustained by you or harm caused to you relating to or
+                        resulting in any way from any Third-Party Content or any contact with Third-Party Websites.
+                    </p>
+
+                    <h2>10. ADVERTISERS</h2>
+                    <p>
+                        We may allow advertisers to display their advertisements and other information in certain areas
+                        of the Site, such as sidebar advertisements or banner advertisements. If you are an advertiser,
+                        you shall take full responsibility for any advertisements you place on the Site and any services
+                        provided on the Site or products sold through those advertisements. Further, as an advertiser,
+                        you warrant and represent that you possess all rights and authority to place advertisements on
+                        the Site, including, but not limited to, intellectual property rights, publicity rights, and
+                        contractual rights. We simply provide the space to place such advertisements, and we have no
+                        other relationship with advertisers.
+                    </p>
+                    <h2>11. SITE MANAGEMENT</h2>
+                    <p>
+                        We reserve the right, but not the obligation, to:
+                    </p>
+                    <ul>
+                        <li>
+                            <strong>(1)</strong> monitor the Site for violations of these Terms of Use;
+                        </li>
+
+                        <li>
+                            <strong>(2)</strong> take appropriate legal action against anyone who, in our sole
+                            discretion, violates the law or these Terms of Use, including without limitation, reporting
+                            such user to law enforcement authorities;
+                        </li>
+
+                        <li>
+                            <strong>(3)</strong> in our sole discretion and without limitation, refuse, restrict access
+                            to, limit the availability of, or disable (to the extent technologically feasible) any of
+                            your Contributions or any portion thereof;
+                        </li>
+
+                        <li>
+                            <strong>(4)</strong> in our sole discretion and without limitation, notice, or liability, to
+                            remove from the Site or otherwise disable all files and content that are excessive in size
+                            or are in any way burdensome to our systems;
+                        </li>
+
+                        <li>
+                            <strong>(5)</strong> otherwise manage the Site in a manner designed to protect our rights
+                            and property and to facilitate the proper functioning of the Site.
+                        </li>
+                    </ul>
+                    <h2>12. Contact</h2>
+                    <p>
+                        For questions, contact:
+                        <a href="mailto:jesse.armenio@gmail.com">jesse.armenio@gmail.com</a>.
+                    </p>
+
+                </div>
+            </section>
+
+            <footer class="footer">
+                <p>
+                    © <span id="year"></span> Jesse Armenio. All rights reserved.
+                    <br>
+                    <a href="/privacy.html">Privacy Policy</a> · <a href="/terms.html">Terms of Use</a>
+                </p>
+            </footer>
+
+        </div>
+    </main>
+
+    <script>
+        document.getElementById("year").textContent = new Date().getFullYear();
+    </script>
+</body>
+
+</html>

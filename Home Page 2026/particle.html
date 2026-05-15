@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Particle Web</title>
+    <script src="Scripts/jquery-3.5.1.min.js"></script>
+    <script src="Scripts/bootstrap.min.js"></script>
+    <script src="https://kit.fontawesome.com/4b245c958c.js" crossorigin="anonymous"></script>
+    <link href="Content/bootstrap.min.css" rel="stylesheet" />
+    <link href="Content/CustomStyles.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#826f6b">
+    <meta name="msapplication-TileColor" content="#da532c">
+    <meta name="theme-color" content="#826f6b">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <style>
+        :root {
+            --bg-top-1: #101827;
+            --bg-top-2: #05080f;
+            --bg-top-3: #02040a;
+
+            --text-main: #f4f7fb;
+            --text-soft: rgba(230, 238, 250, 0.78);
+            --accent: #8fb8ff;
+            --accent-strong: #b9d2ff;
+            --panel: rgba(11, 18, 30, 0.48);
+            --panel-border: rgba(143, 184, 255, 0.14);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            min-height: 200vh;
+            overflow-x: hidden;
+            background:
+                radial-gradient(circle at 50% 20%, rgba(35, 58, 98, 0.22), transparent 32%),
+                radial-gradient(circle at 80% 30%, rgba(55, 95, 175, 0.10), transparent 24%),
+                radial-gradient(circle at center, var(--bg-top-1) 0%, var(--bg-top-2) 65%, var(--bg-top-3) 100%);
+            color: var(--text-main);
+            font-family: Arial, sans-serif;
+
+            scroll-snap-type: y mandatory;
+            scroll-snap-stop: always;
+        }
+
+        .section {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6rem 2rem;
+
+            scroll-snap-align: start;
+            scroll-snap-stop: always;
+        }
+
+        #particleCanvas {
+            position: fixed;
+            inset: 0;
+            width: 100vw;
+            height: 100vh;
+            display: block;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .page-shell {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero {
+            text-align: center;
+        }
+
+        .hero-content {
+            position: relative;
+            max-width: 1100px;
+            margin: 0 auto;
+            isolation: isolate;
+        }
+
+        .hero-content::before {
+            content: "";
+            position: absolute;
+            inset: -3rem -2rem;
+            z-index: -1;
+            background:
+                radial-gradient(circle, rgba(5, 8, 15, 0.72) 0%, rgba(5, 8, 15, 0.35) 55%, rgba(5, 8, 15, 0) 100%);
+            filter: blur(18px);
+        }
+
+        .eyebrow {
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: var(--accent);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            opacity: 0.85;
+        }
+
+        .hero h1 {
+            font-size: clamp(3.2rem, 10vw, 8rem);
+            line-height: 0.92;
+            letter-spacing: -0.05em;
+            margin-bottom: 1.25rem;
+            text-shadow: 0 8px 40px rgba(0, 0, 0, 0.35);
+        }
+
+        .hero .subheadline {
+            max-width: 900px;
+            margin: 0 auto 1.75rem;
+            font-size: clamp(1rem, 2vw, 1.35rem);
+            line-height: 1.7;
+            color: var(--text-soft);
+        }
+
+        .hero-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 180px;
+            padding: 0.95rem 1.4rem;
+            border-radius: 999px;
+            text-decoration: none;
+            font-weight: 700;
+            transition: transform 180ms ease, background-color 180ms ease, border-color 180ms ease, color 180ms ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, rgba(115, 165, 255, 0.95), rgba(157, 198, 255, 0.95));
+            color: #07111f;
+            box-shadow: 0 10px 30px rgba(92, 148, 255, 0.2);
+        }
+
+        .btn-secondary {
+            border: 1px solid rgba(180, 205, 255, 0.25);
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(8px);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .scroll-indicator {
+            margin-top: 1rem;
+            color: rgba(230, 238, 250, 0.65);
+            font-size: 0.95rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .scroll-line {
+            width: 1px;
+            height: 72px;
+            margin: 1rem auto 0;
+            background: linear-gradient(to bottom, rgba(180, 205, 255, 0.7), rgba(180, 205, 255, 0));
+        }
+
+        .section-two {
+            align-items: flex-start;
+            padding-top: 10vh;
+            padding-bottom: 10vh;
+        }
+
+        .content-wrap {
+            width: min(1200px, 100%);
+            margin: 0 auto;
+        }
+
+        .section-label {
+            text-transform: uppercase;
+            letter-spacing: 0.24em;
+            color: var(--accent);
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+            opacity: 0.85;
+        }
+
+        .section-two h2 {
+            font-size: clamp(2.2rem, 5vw, 4.4rem);
+            line-height: 1;
+            margin-bottom: 1rem;
+        }
+
+        .section-two .intro {
+            max-width: 760px;
+            color: var(--text-soft);
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 2.5rem;
+        }
+
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 1.4rem;
+        }
+
+        .metric-card {
+            background: linear-gradient(180deg, rgba(15, 24, 38, 0.72), rgba(10, 16, 26, 0.6));
+            border: 1px solid var(--panel-border);
+            border-radius: 22px;
+            padding: 1.5rem;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.18);
+        }
+
+        .metric-value {
+            font-size: clamp(2rem, 4vw, 3.4rem);
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            color: var(--accent-strong);
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-title {
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            color: rgba(230, 238, 250, 0.72);
+            margin-bottom: 0.75rem;
+        }
+
+        .metric-copy {
+            color: var(--text-soft);
+            line-height: 1.7;
+            font-size: 0.98rem;
+        }
+
+        .progress-ui {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 3;
+            width: min(220px, calc(100vw - 40px));
+            padding: 1rem;
+            border-radius: 18px;
+            background: rgba(10, 14, 22, 0.55);
+            border: 1px solid rgba(160, 200, 255, 0.12);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+        }
+
+        .progress-ui-title {
+            font-size: 0.82rem;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: rgba(230, 238, 250, 0.72);
+            margin-bottom: 0.6rem;
+        }
+
+        .progress-bar {
+            height: 8px;
+            border-radius: 999px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.08);
+            margin-bottom: 0.7rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, #77a8ff, #bad4ff);
+            box-shadow: 0 0 18px rgba(119, 168, 255, 0.45);
+        }
+
+        .progress-stats {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            font-size: 0.9rem;
+            color: rgba(230, 238, 250, 0.72);
+        }
+
+        @media (max-width: 980px) {
+            .metric-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .progress-ui {
+                top: 14px;
+                right: 14px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            html {
+                scroll-behavior: auto;
+            }
+
+            .btn {
+                transition: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="particleCanvas" aria-hidden="true"></canvas>
+
+    <div class="progress-ui">
+        <div class="progress-ui-title">Scroll Reactive Background</div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-stats">
+            <span>Progress</span>
+            <span id="progressText">0%</span>
+        </div>
+    </div>
+
+    <main class="page-shell">
+        <section class="section hero">
+            <div class="hero-content" id="heroContent">
+                <div class="eyebrow">Business Analyst • Data Systems • Reporting</div>
+                <h1>Jesse Armenio</h1>
+                <p class="subheadline">
+                    A premium particle background mockup that stays restrained in the hero,
+                    then becomes more connected and data-like as the user scrolls into a
+                    second section below the fold.
+                </p>
+
+                <div class="hero-actions">
+                    <a class="btn btn-primary" href="#sectionTwo">See Scroll Demo</a>
+                    <a class="btn btn-secondary" href="#">Mock Resume</a>
+                </div>
+
+                <div class="scroll-indicator">
+                    Scroll to activate the network
+                    <div class="scroll-line"></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section section-two" id="sectionTwo">
+            <div class="content-wrap">
+                <div class="section-label">Second Section Mockup</div>
+                <h2>As the page progresses, the network wakes up.</h2>
+                <p class="intro">
+                    This section exists as a below-the-fold test area. The particle web becomes
+                    slightly denser, lines gain presence, and the overall motion feels more active.
+                    It is still subtle enough for a professional site, but clearly reactive to scroll depth.
+                </p>
+
+                <div class="metric-grid">
+                    <article class="metric-card">
+                        <div class="metric-value">1,200+</div>
+                        <div class="metric-title">Reports Migrated</div>
+                        <p class="metric-copy">
+                            Scroll progress increases particle density and connection intensity,
+                            reinforcing a systems-and-scale visual language.
+                        </p>
+                    </article>
+
+                    <article class="metric-card">
+                        <div class="metric-value">$55B+</div>
+                        <div class="metric-title">AUM Optimized</div>
+                        <p class="metric-copy">
+                            The background transitions from calm hero ambience to a more connected,
+                            data-driven state deeper into the page.
+                        </p>
+                    </article>
+
+                    <article class="metric-card">
+                        <div class="metric-value">650+</div>
+                        <div class="metric-title">Stakeholders Supported</div>
+                        <p class="metric-copy">
+                            This lets the animation support storytelling across sections rather than
+                            behaving like a static visual effect.
+                        </p>
+                    </article>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        (() => {
+            const canvas = document.getElementById("particleCanvas");
+            const ctx = canvas.getContext("2d", { alpha: true });
+            const heroContent = document.getElementById("heroContent");
+            const progressFill = document.getElementById("progressFill");
+            const progressText = document.getElementById("progressText");
+
+            const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+            const isTouchDevice = window.matchMedia("(pointer: coarse)").matches;
+
+
+            const sections = Array.from(document.querySelectorAll(".section"));
+
+            let width = 0;
+            let height = 0;
+            let dpr = Math.min(window.devicePixelRatio || 1, 2);
+            let animationFrameId = 0;
+            let isRunning = true;
+            let heroRect = null;
+            let scrollProgress = 0;
+
+            const pointer = {
+                x: 0,
+                y: 0,
+                active: false
+            };
+
+            const config = {
+                minParticles: isTouchDevice ? 44 : 65,
+                maxParticles: isTouchDevice ? 100 : 155,
+                densityDivisor: isTouchDevice ? 15000 : 9800,
+                minSize: 0.85,
+                maxSize: 2.1,
+                baseSpeedMin: prefersReducedMotion ? 0.05 : 0.14,
+                baseSpeedMax: prefersReducedMotion ? 0.10 : 0.34,
+                linkDistanceMin: 82,
+                linkDistanceMax: 128,
+                hoverDistanceMin: 105,
+                hoverDistanceMax: 170,
+                cursorDistanceMin: 120,
+                cursorDistanceMax: 185,
+                baseLineAlphaMin: 0.08,
+                baseLineAlphaMax: 0.26,
+                pointerAlphaMin: 0.18,
+                pointerAlphaMax: 0.52,
+                glowRadiusMin: 80,
+                glowRadiusMax: 145,
+                backgroundTintMin: 0.03,
+                backgroundTintMax: 0.08,
+                particleColorStart: [220, 232, 248],
+                particleColorEnd: [194, 220, 255],
+                lineColorStart: [118, 166, 235],
+                lineColorEnd: [162, 198, 255],
+                heroPadding: 110
+            };
+
+            const particles = [];
+
+            function clamp(value, min, max) {
+                return Math.max(min, Math.min(max, value));
+            }
+
+            function lerp(start, end, amount) {
+                return start + (end - start) * amount;
+            }
+
+            function colorLerp(a, b, t) {
+                const r = Math.round(lerp(a[0], b[0], t));
+                const g = Math.round(lerp(a[1], b[1], t));
+                const bl = Math.round(lerp(a[2], b[2], t));
+                return `${r}, ${g}, ${bl}`;
+            }
+
+            function getRuntimeSettings() {
+                const t = scrollProgress;
+
+                return {
+                    linkDistance: lerp(config.linkDistanceMin, config.linkDistanceMax, t),
+                    hoverDistance: lerp(config.hoverDistanceMin, config.hoverDistanceMax, t),
+                    cursorDistance: lerp(config.cursorDistanceMin, config.cursorDistanceMax, t),
+                    baseLineAlpha: lerp(config.baseLineAlphaMin, config.baseLineAlphaMax, t),
+                    pointerAlpha: lerp(config.pointerAlphaMin, config.pointerAlphaMax, t),
+                    glowRadius: lerp(config.glowRadiusMin, config.glowRadiusMax, t),
+                    particleColor: colorLerp(config.particleColorStart, config.particleColorEnd, t),
+                    lineColor: colorLerp(config.lineColorStart, config.lineColorEnd, t),
+                    bgTintAlpha: lerp(config.backgroundTintMin, config.backgroundTintMax, t)
+                };
+            }
+
+            class Particle {
+                constructor() {
+                    this.reset(true);
+                }
+
+                reset(initial = false) {
+                    this.x = initial ? Math.random() * width : Math.random() * width;
+                    this.y = initial ? Math.random() * height : Math.random() * height;
+
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = lerp(config.baseSpeedMin, config.baseSpeedMax, Math.random());
+
+                    this.vx = Math.cos(angle) * speed;
+                    this.vy = Math.sin(angle) * speed;
+                    this.size = lerp(config.minSize, config.maxSize, Math.random());
+                    this.depth = 0.65 + Math.random() * 0.95;
+                }
+
+                update() {
+                    const motionBoost = lerp(0.85, 1.25, scrollProgress);
+
+                    this.x += this.vx * this.depth * motionBoost;
+                    this.y += this.vy * this.depth * motionBoost;
+
+                    if (this.x < -20) this.x = width + 20;
+                    if (this.x > width + 20) this.x = -20;
+                    if (this.y < -20) this.y = height + 20;
+                    if (this.y > height + 20) this.y = -20;
+
+                    if (heroRect) {
+                        const pad = config.heroPadding;
+                        const left = heroRect.left - pad;
+                        const right = heroRect.right + pad;
+                        const top = heroRect.top - pad;
+                        const bottom = heroRect.bottom + pad;
+
+                        if (this.x > left && this.x < right && this.y > top && this.y < bottom) {
+                            const centerX = (left + right) * 0.5;
+                            const centerY = (top + bottom) * 0.5;
+                            const dx = this.x - centerX;
+                            const dy = this.y - centerY;
+                            const len = Math.hypot(dx, dy) || 1;
+
+                            this.x += (dx / len) * 0.9;
+                            this.y += (dy / len) * 0.9;
+                        }
+                    }
+                }
+
+                draw(runtime) {
+                    const alpha = getHeroFade(this.x, this.y) * (0.36 + this.depth * 0.22);
+                    if (alpha <= 0.02) return;
+
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size * this.depth, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(${runtime.particleColor}, ${alpha})`;
+                    ctx.fill();
+                }
+            }
+
+            function getParticleTargetCount() {
+                const areaCount = Math.floor((width * height) / config.densityDivisor);
+                const base = clamp(areaCount, config.minParticles, config.maxParticles);
+                const boosted = Math.round(lerp(base, base * 1.28, scrollProgress));
+                return clamp(boosted, config.minParticles, config.maxParticles);
+            }
+
+            function syncParticleCount() {
+                const target = getParticleTargetCount();
+
+                while (particles.length < target) {
+                    particles.push(new Particle());
+                }
+
+                while (particles.length > target) {
+                    particles.pop();
+                }
+            }
+
+            function resizeCanvas() {
+                dpr = Math.min(window.devicePixelRatio || 1, 2);
+                width = window.innerWidth;
+                height = window.innerHeight;
+
+                canvas.width = Math.floor(width * dpr);
+                canvas.height = Math.floor(height * dpr);
+                canvas.style.width = `${width}px`;
+                canvas.style.height = `${height}px`;
+
+                ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            }
+
+            function updateHeroRect() {
+                if (!heroContent) {
+                    heroRect = null;
+                    return;
+                }
+
+                const rect = heroContent.getBoundingClientRect();
+                heroRect = {
+                    left: rect.left,
+                    right: rect.right,
+                    top: rect.top,
+                    bottom: rect.bottom
+                };
+            }
+
+            function distSq(ax, ay, bx, by) {
+                const dx = ax - bx;
+                const dy = ay - by;
+                return dx * dx + dy * dy;
+            }
+
+            function drawLine(x1, y1, x2, y2, alpha, widthValue) {
+                if (alpha <= 0.01) return;
+
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.strokeStyle = `rgba(${currentRuntime.lineColor}, ${alpha})`;
+                ctx.lineWidth = widthValue;
+                ctx.stroke();
+            }
+
+            function getHeroFade(x, y) {
+                if (!heroRect) return 1;
+
+                const pad = config.heroPadding;
+                const left = heroRect.left - pad;
+                const right = heroRect.right + pad;
+                const top = heroRect.top - pad;
+                const bottom = heroRect.bottom + pad;
+
+                if (x < left || x > right || y < top || y > bottom) return 1;
+
+                const dx = Math.min(Math.abs(x - left), Math.abs(x - right));
+                const dy = Math.min(Math.abs(y - top), Math.abs(y - bottom));
+                const edgeDistance = Math.min(dx, dy);
+
+                return clamp(edgeDistance / 56, 0, 1) * 0.24;
+            }
+
+            function buildSpatialGrid(cellSize) {
+                const grid = new Map();
+
+                for (let i = 0; i < particles.length; i++) {
+                    const p = particles[i];
+                    const gx = Math.floor(p.x / cellSize);
+                    const gy = Math.floor(p.y / cellSize);
+                    const key = `${gx},${gy}`;
+
+                    if (!grid.has(key)) {
+                        grid.set(key, []);
+                    }
+
+                    grid.get(key).push(i);
+                }
+
+                return grid;
+            }
+
+            function connectParticles(runtime) {
+                const maxDist = pointer.active ? runtime.hoverDistance : runtime.linkDistance;
+                const maxDistSq = maxDist * maxDist;
+                const grid = buildSpatialGrid(maxDist);
+
+                for (let i = 0; i < particles.length; i++) {
+                    const p1 = particles[i];
+                    const gx = Math.floor(p1.x / maxDist);
+                    const gy = Math.floor(p1.y / maxDist);
+
+                    for (let oy = -1; oy <= 1; oy++) {
+                        for (let ox = -1; ox <= 1; ox++) {
+                            const key = `${gx + ox},${gy + oy}`;
+                            const bucket = grid.get(key);
+
+                            if (!bucket) continue;
+
+                            for (let k = 0; k < bucket.length; k++) {
+                                const j = bucket[k];
+                                if (j <= i) continue;
+
+                                const p2 = particles[j];
+                                const dSq = distSq(p1.x, p1.y, p2.x, p2.y);
+
+                                if (dSq >= maxDistSq) continue;
+
+                                const d = Math.sqrt(dSq);
+                                const fade = Math.min(getHeroFade(p1.x, p1.y), getHeroFade(p2.x, p2.y));
+                                const alpha =
+                                    (1 - d / maxDist) *
+                                    runtime.baseLineAlpha *
+                                    fade *
+                                    ((p1.depth + p2.depth) * 0.5);
+
+                                const lineWidth = lerp(0.75, 1.15, scrollProgress);
+                                drawLine(p1.x, p1.y, p2.x, p2.y, alpha, lineWidth);
+                            }
+                        }
+                    }
+                }
+            }
+
+            function connectPointer(runtime) {
+                if (!pointer.active || prefersReducedMotion) return;
+
+                const maxDistSq = runtime.cursorDistance * runtime.cursorDistance;
+
+                for (let i = 0; i < particles.length; i++) {
+                    const p = particles[i];
+                    const dSq = distSq(pointer.x, pointer.y, p.x, p.y);
+
+                    if (dSq >= maxDistSq) continue;
+
+                    const d = Math.sqrt(dSq);
+                    const fade = getHeroFade(p.x, p.y);
+                    const alpha =
+                        (1 - d / runtime.cursorDistance) *
+                        runtime.pointerAlpha *
+                        fade *
+                        p.depth;
+
+                    const lineWidth = lerp(0.95, 1.2, scrollProgress);
+                    drawLine(pointer.x, pointer.y, p.x, p.y, alpha, lineWidth);
+                }
+            }
+
+            function drawPointerGlow(runtime) {
+                if (!pointer.active || prefersReducedMotion) return;
+
+                const gradient = ctx.createRadialGradient(
+                    pointer.x,
+                    pointer.y,
+                    0,
+                    pointer.x,
+                    pointer.y,
+                    runtime.glowRadius
+                );
+
+                gradient.addColorStop(0, `rgba(${currentRuntime.lineColor}, ${lerp(0.10, 0.16, scrollProgress)})`);
+                gradient.addColorStop(0.55, `rgba(${currentRuntime.lineColor}, ${lerp(0.04, 0.08, scrollProgress)})`);
+                gradient.addColorStop(1, `rgba(${currentRuntime.lineColor}, 0)`);
+
+                ctx.beginPath();
+                ctx.fillStyle = gradient;
+                ctx.arc(pointer.x, pointer.y, runtime.glowRadius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            function drawBackgroundBloom(runtime) {
+                const gradient = ctx.createRadialGradient(
+                    width * 0.5,
+                    lerp(height * 0.28, height * 0.42, scrollProgress),
+                    0,
+                    width * 0.5,
+                    height * 0.4,
+                    Math.max(width, height) * 0.85
+                );
+
+                gradient.addColorStop(0, `rgba(${currentRuntime.lineColor}, ${runtime.bgTintAlpha})`);
+                gradient.addColorStop(0.45, `rgba(24, 42, 68, ${runtime.bgTintAlpha * 0.35})`);
+                gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
+
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, width, height);
+            }
+
+            function updateScrollProgress() {
+                const scrollable = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
+                const raw = window.scrollY / scrollable;
+
+                scrollProgress = clamp(raw, 0, 1);
+
+                progressFill.style.width = `${(scrollProgress * 100).toFixed(1)}%`;
+                progressText.textContent = `${Math.round(scrollProgress * 100)}%`;
+            }
+
+            let currentRuntime = getRuntimeSettings();
+
+            function animate() {
+                if (!isRunning) return;
+
+                currentRuntime = getRuntimeSettings();
+                syncParticleCount();
+
+                ctx.clearRect(0, 0, width, height);
+                drawBackgroundBloom(currentRuntime);
+
+                for (let i = 0; i < particles.length; i++) {
+                    particles[i].update();
+                    particles[i].draw(currentRuntime);
+                }
+
+                connectParticles(currentRuntime);
+                connectPointer(currentRuntime);
+                drawPointerGlow(currentRuntime);
+
+                animationFrameId = requestAnimationFrame(animate);
+            }
+
+            function handlePointerMove(event) {
+                pointer.x = event.clientX;
+                pointer.y = event.clientY;
+                pointer.active = true;
+            }
+
+            function handleVisibilityChange() {
+                if (document.hidden) {
+                    isRunning = false;
+                    cancelAnimationFrame(animationFrameId);
+                } else {
+                    isRunning = true;
+                    animate();
+                }
+            }
+
+            let resizeTimer = 0;
+            function handleResize() {
+                clearTimeout(resizeTimer);
+
+                resizeTimer = setTimeout(() => {
+                    resizeCanvas();
+                    updateHeroRect();
+                    updateScrollProgress();
+                    syncParticleCount();
+                }, 120);
+            }
+
+            function initializeParticles() {
+                particles.length = 0;
+                syncParticleCount();
+                pointer.x = width * 0.5;
+                pointer.y = height * 0.5;
+            }
+
+
+
+            window.addEventListener("pointermove", handlePointerMove, { passive: true });
+            window.addEventListener("pointerdown", handlePointerMove, { passive: true });
+            window.addEventListener("pointerleave", () => {
+                pointer.active = false;
+            });
+            window.addEventListener("blur", () => {
+                pointer.active = false;
+            });
+            window.addEventListener("resize", handleResize, { passive: true });
+            window.addEventListener("scroll", () => {
+                updateScrollProgress();
+                updateHeroRect();
+            }, { passive: true });
+
+
+            if (prefersReducedMotion || sections.length < 2) {
+                return;
+            }
+
+            let currentSectionIndex = 0;
+            let isSnapping = false;
+            let touchStartY = 0;
+            let touchEndY = 0;
+            let snapReleaseTimer = 0;
+
+            function clamp(value, min, max) {
+                return Math.max(min, Math.min(max, value));
+            }
+
+            function getClosestSectionIndex() {
+                const viewportCenter = window.scrollY + window.innerHeight * 0.5;
+
+                let closestIndex = 0;
+                let closestDistance = Infinity;
+
+                for (let i = 0; i < sections.length; i++) {
+                    const sectionTop = sections[i].offsetTop;
+                    const sectionCenter = sectionTop + sections[i].offsetHeight * 0.5;
+                    const distance = Math.abs(sectionCenter - viewportCenter);
+
+                    if (distance < closestDistance) {
+                        closestDistance = distance;
+                        closestIndex = i;
+                    }
+                }
+
+                return closestIndex;
+            }
+
+            function scrollToSection(index) {
+                const targetIndex = clamp(index, 0, sections.length - 1);
+
+                if (targetIndex === currentSectionIndex && Math.abs(window.scrollY - sections[targetIndex].offsetTop) < 4) {
+                    return;
+                }
+
+                currentSectionIndex = targetIndex;
+                isSnapping = true;
+
+                window.scrollTo({
+                    top: sections[targetIndex].offsetTop,
+                    behavior: "smooth"
+                });
+
+                clearTimeout(snapReleaseTimer);
+                snapReleaseTimer = setTimeout(() => {
+                    isSnapping = false;
+                }, 700);
+            }
+
+            function handleDirectionalSnap(direction) {
+                if (isSnapping) return;
+
+                currentSectionIndex = getClosestSectionIndex();
+
+                if (direction > 0) {
+                    scrollToSection(currentSectionIndex + 1);
+                } else if (direction < 0) {
+                    scrollToSection(currentSectionIndex - 1);
+                }
+            }
+
+            window.addEventListener("wheel", (event) => {
+                if (Math.abs(event.deltaY) < 8) return;
+                handleDirectionalSnap(event.deltaY);
+            }, { passive: true });
+
+            window.addEventListener("keydown", (event) => {
+                if (isSnapping) return;
+
+                if (event.key === "ArrowDown" || event.key === "PageDown" || event.key === " ") {
+                    handleDirectionalSnap(1);
+                }
+
+                if (event.key === "ArrowUp" || event.key === "PageUp") {
+                    handleDirectionalSnap(-1);
+                }
+
+                if (event.key === "Home") {
+                    scrollToSection(0);
+                }
+
+                if (event.key === "End") {
+                    scrollToSection(sections.length - 1);
+                }
+            });
+
+            window.addEventListener("touchstart", (event) => {
+                if (!event.touches.length) return;
+                touchStartY = event.touches[0].clientY;
+            }, { passive: true });
+
+            window.addEventListener("touchend", (event) => {
+                if (!event.changedTouches.length || isSnapping) return;
+
+                touchEndY = event.changedTouches[0].clientY;
+                const deltaY = touchStartY - touchEndY;
+
+                if (Math.abs(deltaY) < 35) return;
+
+                handleDirectionalSnap(deltaY);
+            }, { passive: true });
+
+            window.addEventListener("scroll", () => {
+                if (isSnapping) return;
+                currentSectionIndex = getClosestSectionIndex();
+            }, { passive: true });
+
+            window.addEventListener("resize", () => {
+                currentSectionIndex = getClosestSectionIndex();
+            }, { passive: true });
+
+            currentSectionIndex = getClosestSectionIndex();
+
+            document.addEventListener("visibilitychange", handleVisibilityChange);
+
+            resizeCanvas();
+            updateHeroRect();
+            updateScrollProgress();
+            initializeParticles();
+            animate();
+        })();
+    </script>
+</body>
+
+</html>
