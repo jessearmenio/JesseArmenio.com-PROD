@@ -1314,6 +1314,7 @@
         html {
             height: 100%;
             line-height: 1.8;
+            background-color: #000;
         }
 
         #bodyavatar {
@@ -5152,26 +5153,6 @@
             transform: rotate(60deg);
         }
 
-        /* Numbers around the analog clock face */
-        .clock-numbers {
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
-            z-index: 1;
-        }
-
-        .clock-numbers span {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            font-family: Poppins, sans-serif;
-            font-size: 13px;
-            font-weight: 500;
-            line-height: 1;
-            color: #d6d6d6;
-            transform: translate(-50%, -50%) rotate(calc(var(--i) * 30deg)) translateY(-60px) rotate(calc(var(--i) * -30deg));
-        }
-
         .head {
             position: relative;
             top: 50%;
@@ -6220,23 +6201,9 @@
 
 <body>
     <div class="dashboard-root">
-        <div class="logogroup2" id="clockbox">
+        <div class="logogroup2">
             <div class="center-dial">
                 <h1 class="center-preview">HELLO</h1>
-                <div class="clock-numbers">
-                    <span style="--i:1">1</span>
-                    <span style="--i:2">2</span>
-                    <span style="--i:3">3</span>
-                    <span style="--i:4">4</span>
-                    <span style="--i:5">5</span>
-                    <span style="--i:6">6</span>
-                    <span style="--i:7">7</span>
-                    <span style="--i:8">8</span>
-                    <span style="--i:9">9</span>
-                    <span style="--i:10">10</span>
-                    <span style="--i:11">11</span>
-                    <span style="--i:12">12</span>
-                </div>
 
                 <div class="head"></div>
                 <div class="torso"></div>
@@ -6343,12 +6310,14 @@
             /*
               Mystify-style screensaver + pixel shift on specific elements only
               -----------------------------------------------------------------
-              Shift target:
-                - #clockbox (the .logogroup2 clock container)
-
+              Shift targets:
+                - #ww_72fada7aac556
+                - #clockbox
+                - #svg
+          
               Behavior:
                 - Screensaver runs daily from 3:00 AM to 5:00 PM America/Chicago
-                - Outside those hours, the clock shifts subtly every 90 seconds (anti burn-in)
+                - During active hours, those elements shift subtly every 90 seconds
                 - No DOM restructuring, no wrapping, no moving body children
             */
 
@@ -6369,7 +6338,7 @@
 
                 shift: {
                     enabled: true,
-                    targetIds: ["clockbox"],
+                    targetIds: ["clockbox", "svg"],
                     maxOffsetPx: 3,
                     stepEveryMs: 90 * 1000,
                     transitionMs: 1200
@@ -6539,7 +6508,11 @@
                 if (!shiftTargets.length) return;
 
                 for (const el of shiftTargets) {
-                    el.style.transform = `translate(${x}px, ${y}px)`;
+                    if (el.id === "clockbox") {
+                        el.style.transform = `translate(${x}px, ${y}px) scale(3.5)`;
+                    } else {
+                        el.style.transform = `translate(${x}px, ${y}px)`;
+                    }
                 }
 
                 currentShiftX = x;
