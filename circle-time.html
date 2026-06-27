@@ -4849,7 +4849,7 @@
         #clockbox {
             text-align: center;
             padding: 14em 0 0 0 !important;
-            transform: scale(1.7) !important
+            transform: translate(var(--shift-x, 0px), var(--shift-y, 0px)) scale(1.7) !important
         }
 
         #clock {
@@ -5112,6 +5112,8 @@
             box-shadow: 0 2px 2px #000;
             cursor: pointer;
             overflow: hidden;
+            transform: scale(1.2);
+            transform-origin: center center;
         }
 
         .center-preview span {
@@ -5166,11 +5168,36 @@
             top: 50%;
             left: 50%;
             font-family: Poppins, sans-serif;
-            font-size: 13px;
+            font-size: 11px;
             font-weight: 500;
             line-height: 1;
-            color: #d6d6d6;
-            transform: translate(-50%, -50%) rotate(calc(var(--i) * 30deg)) translateY(-60px) rotate(calc(var(--i) * -30deg));
+            color: #e8e8e8;
+            transform: translate(-50%, -50%) rotate(calc(var(--i) * 30deg)) translateY(-52px) rotate(calc(var(--i) * -30deg));
+        }
+
+        /* Minute/second tick ring (built by JS) */
+        .clock-ticks {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Center hub */
+        .clock-hub {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 9px;
+            height: 9px;
+            box-sizing: border-box;
+            border-radius: 50%;
+            background: #fff;
+            border: 2px solid #ff7a00;
+            transform: translate(-50%, -50%);
+            z-index: 6;
         }
 
         .head {
@@ -5207,34 +5234,34 @@
         }
 
         .hour-hand {
-            width: 10px;
-            height: 50px;
+            width: 3.5px;
+            height: 48px;
             position: relative;
-            top: calc(50% - 45px);
-            left: calc(50% - 5px);
+            top: calc(50% - 36px);
+            left: calc(50% - 1.75px);
             transition: all .5s;
-            background: #fff;
-            border-radius: 5px;
+            background: #f2f2f2;
+            border-radius: 3px;
         }
 
         .minute-hand {
-            width: 10px;
-            height: 70px;
+            width: 2.5px;
+            height: 64px;
             position: relative;
-            top: calc(50% - 65px);
-            left: calc(50% - 5px);
-            background: #ccc;
-            border-radius: 5px;
+            top: calc(50% - 50px);
+            left: calc(50% - 1.25px);
+            background: #ffffff;
+            border-radius: 3px;
         }
 
         .second-hand {
-            width: 2px;
-            height: 70px;
+            width: 1.4px;
+            height: 74px;
             position: relative;
-            top: calc(50% - 69px);
-            left: calc(50% - 1px);
-            background: #aaa;
-            border-radius: 1px;
+            top: calc(50% - 58px);
+            left: calc(50% - 0.7px);
+            background: #ff7a00;
+            border-radius: 2px;
         }
 
         .day-name-dial {
@@ -5243,7 +5270,7 @@
             left: 50%;
             width: 250px;
             height: 250px;
-            transform: translateX(-50%) translateY(-50%);
+            transform: translateX(-50%) translateY(-50%) scale(1.18);
             transition: all .5s;
         }
 
@@ -5431,7 +5458,7 @@
             left: 50%;
             width: 350px;
             height: 350px;
-            transform: translateX(-50%) translateY(-50%);
+            transform: translateX(-50%) translateY(-50%) scale(1.18);
             transition: all .5s;
         }
 
@@ -5687,7 +5714,7 @@
             left: 50%;
             width: 450px;
             height: 450px;
-            transform: translateX(-50%) translateY(-50%);
+            transform: translateX(-50%) translateY(-50%) scale(1.18);
             transition: all .5s;
         }
 
@@ -6253,6 +6280,8 @@
                 <div class="hand-container" id="seconds">
                     <div class="second-hand"></div>
                 </div>
+
+                <div class="clock-hub"></div>
             </div>
 
             <div class="day-name-dial">
@@ -6541,7 +6570,8 @@
                 if (!shiftTargets.length) return;
 
                 for (const el of shiftTargets) {
-                    el.style.transform = `translate(${x}px, ${y}px)`;
+                    el.style.setProperty("--shift-x", x + "px");
+                    el.style.setProperty("--shift-y", y + "px");
                 }
 
                 currentShiftX = x;
@@ -6887,6 +6917,39 @@
 
             init();
         });
+    </script>
+
+    <!-- Build the minute/second tick ring inside the center clock dial -->
+    <script>
+        (function buildClockTicks() {
+            var dial = document.querySelector(".center-dial");
+            if (!dial || dial.querySelector(".clock-ticks")) return;
+
+            var svgNS = "http://www.w3.org/2000/svg";
+            var svg = document.createElementNS(svgNS, "svg");
+            svg.setAttribute("class", "clock-ticks");
+            svg.setAttribute("viewBox", "0 0 150 150");
+
+            var cx = 75, cy = 75, rOuter = 72;
+
+            for (var i = 0; i < 60; i++) {
+                var major = (i % 5 === 0);
+                var ang = i * 6 * Math.PI / 180;
+                var rInner = major ? 64 : 69;
+
+                var line = document.createElementNS(svgNS, "line");
+                line.setAttribute("x1", (cx + rOuter * Math.sin(ang)).toFixed(2));
+                line.setAttribute("y1", (cy - rOuter * Math.cos(ang)).toFixed(2));
+                line.setAttribute("x2", (cx + rInner * Math.sin(ang)).toFixed(2));
+                line.setAttribute("y2", (cy - rInner * Math.cos(ang)).toFixed(2));
+                line.setAttribute("stroke", major ? "#cfcfcf" : "#5a5a5a");
+                line.setAttribute("stroke-width", major ? "1.6" : "1");
+                line.setAttribute("stroke-linecap", "round");
+                svg.appendChild(line);
+            }
+
+            dial.insertBefore(svg, dial.firstChild);
+        })();
     </script>
 </body>
 
