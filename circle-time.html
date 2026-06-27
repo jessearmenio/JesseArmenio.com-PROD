@@ -5189,6 +5189,16 @@
             backface-visibility: hidden;
         }
 
+        /* The tick <line>s are SVG, so they inherit stroke-dasharray /
+           stroke-dashoffset from the #clockbox (.logogroup2) container, which
+           runs a leftover infinite "textAnimateintro" logo animation on those
+           properties. Without this override the marks inherit the animated dash
+           and visibly flicker on/off. Pin them to a solid, un-animated stroke. */
+        .clock-ticks line {
+            stroke-dasharray: none;
+            stroke-dashoffset: 0;
+        }
+
         /* Center hub */
         .clock-hub {
             position: absolute;
