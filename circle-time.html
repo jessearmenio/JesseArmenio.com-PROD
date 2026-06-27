@@ -4849,7 +4849,9 @@
         #clockbox {
             text-align: center;
             padding: 14em 0 0 0 !important;
-            transform: translate(var(--shift-x, 0px), var(--shift-y, 0px)) scale(1.44) !important
+            /* Base scale only. The pixel-shift adds a GPU-composited translate
+               on top of this via an inline transform (see applyShift). */
+            transform: scale(1.44);
         }
 
         #clock {
@@ -6586,6 +6588,15 @@
                 }
 
                 for (const el of shiftTargets) {
+                    // Read the element's base scale from CSS once, so the shift's
+                    // inline transform can preserve it without hard-coding a value.
+                    var t = getComputedStyle(el).transform;
+                    var base = 1;
+                    if (t && t !== "none") {
+                        try { base = new DOMMatrixReadOnly(t).a || 1; } catch (e) { base = 1; }
+                    }
+                    el._baseScale = base;
+
                     el.style.willChange = "transform";
                     el.style.transition = `transform ${CONFIG.shift.transitionMs}ms linear`;
                 }
@@ -6597,8 +6608,8 @@
                 if (!shiftTargets.length) return;
 
                 for (const el of shiftTargets) {
-                    el.style.setProperty("--shift-x", x + "px");
-                    el.style.setProperty("--shift-y", y + "px");
+                    var scale = el._baseScale || 1;
+                    el.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
                 }
 
                 currentShiftX = x;
