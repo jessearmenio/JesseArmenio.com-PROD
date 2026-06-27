@@ -6370,6 +6370,29 @@
  * Change log:
  * 		25/09/16 - Quick fix to day of the week
  */
+        // Roll the date rings over once a day: reload at the next midnight
+        // (America/Chicago). Reschedules itself on each fresh load.
+        (function scheduleMidnightRefresh() {
+            var now = new Date();
+            var parts = new Intl.DateTimeFormat("en-US", {
+                timeZone: "America/Chicago",
+                hour12: false,
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit"
+            }).formatToParts(now);
+            var h = Number(parts.find(function (p) { return p.type === "hour"; }).value) % 24;
+            var m = Number(parts.find(function (p) { return p.type === "minute"; }).value);
+            var s = Number(parts.find(function (p) { return p.type === "second"; }).value);
+
+            var elapsedMs = ((h * 3600) + (m * 60) + s) * 1000 + now.getMilliseconds();
+            var msUntilMidnight = (24 * 3600 * 1000) - elapsedMs + 2000; // +2s buffer past midnight
+
+            setTimeout(function () {
+                window.location.reload();
+            }, msUntilMidnight);
+        })();
+
         (() => {
             "use strict";
 
