@@ -4852,6 +4852,10 @@
             /* Base scale only. The pixel-shift adds a GPU-composited translate
                on top of this via an inline transform (see applyShift). */
             transform: scale(1.44);
+            /* Kill the vestigial infinite intro animations (draw2 / textAnimateintro)
+               inherited from .logogroup2 — they animate SVG stroke on a div (no visual
+               effect) but keep re-compositing the scaled clock, causing tick flicker. */
+            animation: none !important;
         }
 
         #clock {
@@ -5185,10 +5189,6 @@
             height: 100%;
             pointer-events: none;
             z-index: 0;
-            /* Paint the static ticks onto their own layer so the per-second
-               hand redraw doesn't re-rasterize (and shimmer) the hairlines */
-            transform: translateZ(0);
-            backface-visibility: hidden;
         }
 
         /* Center hub */
@@ -5237,10 +5237,6 @@
             filter: alpha(opacity=0);
             width: 25px;
             height: 150px;
-            /* Own compositor layer: the per-second rotation is composited,
-               so it won't repaint the static dial/ticks underneath */
-            will-change: transform;
-            backface-visibility: hidden;
         }
 
         .hour-hand {
@@ -6260,7 +6256,7 @@
     <div class="dashboard-root">
         <div class="logogroup2" id="clockbox">
             <div class="center-dial">
-                <h1 class="center-preview">HELLO</h1>
+                <h1 class="center-preview">JESSE ARMENIO</h1>
                 <div class="clock-numbers">
                     <span style="--i:1">1</span>
                     <span style="--i:2">2</span>
@@ -6428,7 +6424,7 @@
                 },
 
                 shift: {
-                    enabled: true,
+                    enabled: false, // disabled while investigating the tick flicker; set true to re-enable
                     targetIds: ["clockbox"],
                     maxOffsetPx: 3,
                     stepEveryMs: 90 * 1000,
@@ -6597,8 +6593,16 @@
                     }
                     el._baseScale = base;
 
-                    el.style.willChange = "transform";
-                    el.style.transition = `transform ${CONFIG.shift.transitionMs}ms linear`;
+                    // Only promote to a compositor layer when the shift is actually
+                    // running; a permanent will-change on the scaled clock makes every
+                    // per-second hand repaint re-rasterize (and shimmer) the thin ticks.
+                    if (CONFIG.shift.enabled) {
+                        el.style.willChange = "transform";
+                        el.style.transition = `transform ${CONFIG.shift.transitionMs}ms linear`;
+                    } else {
+                        el.style.willChange = "auto";
+                        el.style.transition = "none";
+                    }
                 }
 
                 return true;
