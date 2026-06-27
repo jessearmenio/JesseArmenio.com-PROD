@@ -5183,6 +5183,10 @@
             height: 100%;
             pointer-events: none;
             z-index: 0;
+            /* Paint the static ticks onto their own layer so the per-second
+               hand redraw doesn't re-rasterize (and shimmer) the hairlines */
+            transform: translateZ(0);
+            backface-visibility: hidden;
         }
 
         /* Center hub */
@@ -5231,6 +5235,10 @@
             filter: alpha(opacity=0);
             width: 25px;
             height: 150px;
+            /* Own compositor layer: the per-second rotation is composited,
+               so it won't repaint the static dial/ticks underneath */
+            will-change: transform;
+            backface-visibility: hidden;
         }
 
         .hour-hand {
