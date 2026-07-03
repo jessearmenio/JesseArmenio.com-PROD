@@ -6357,56 +6357,11 @@
             color: #6c7bb0 !important;
         }
 
-        /* --- Festive banner --- */
-        #july4-banner {
-            position: fixed;
-            top: 26px;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            text-align: center;
-            pointer-events: none;
-            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            font-weight: 700;
-            letter-spacing: 6px;
-            text-transform: uppercase;
-            font-size: clamp(18px, 3.4vw, 34px);
-            line-height: 1.2;
-            background: linear-gradient(90deg, #ff3b47 0%, #ff8f97 20%, #ffffff 50%, #8fc0ff 80%, #5aa9ff 100%);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.6));
-            animation: july4-glow 3s ease-in-out infinite alternate;
-        }
-
-        #july4-banner .spark {
-            -webkit-text-fill-color: initial;
-            color: #ffd24d;
-        }
-
-        @keyframes july4-glow {
-            from {
-                filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 4px rgba(255, 59, 71, 0.3));
-            }
-
-            to {
-                filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 16px rgba(90, 169, 255, 0.6));
-            }
-        }
-
-        @media only screen and (max-width: 600px) {
-            #july4-banner {
-                letter-spacing: 3px;
-                top: 16px;
-            }
-        }
     </style>
 </head>
 
 <body>
     <canvas id="july4-sky"></canvas>
-    <div id="july4-banner">&#9733; Happy 4<sup>th</sup> of July <span class="spark">&#9733;</span></div>
     <div class="dashboard-root">
         <div class="logogroup2" id="clockbox">
             <div class="center-dial">
