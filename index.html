@@ -2660,6 +2660,12 @@
             let heroRect = null;
             let scrollProgress = 0;
 
+            const pointer = {
+                x: 0,
+                y: 0,
+                active: false
+            };
+
             const config = {
                 minParticles: isTouchDevice ? 44 : 65,
                 maxParticles: isTouchDevice ? 100 : 155,
@@ -2670,8 +2676,14 @@
                 baseSpeedMax: prefersReducedMotion ? 0.10 : 0.34,
                 linkDistanceMin: 82,
                 linkDistanceMax: 128,
+                hoverDistanceMin: 105,
+                hoverDistanceMax: 170,
+                cursorDistanceMin: 120,
+                cursorDistanceMax: 185,
                 baseLineAlphaMin: 0.08,
                 baseLineAlphaMax: 0.26,
+                pointerAlphaMin: 0.18,
+                pointerAlphaMax: 0.52,
                 backgroundTintMin: 0.03,
                 backgroundTintMax: 0.08,
                 particleColorStart: [220, 232, 248],
@@ -2702,7 +2714,10 @@
                 const t = scrollProgress;
                 return {
                     linkDistance: lerp(config.linkDistanceMin, config.linkDistanceMax, t),
+                    hoverDistance: lerp(config.hoverDistanceMin, config.hoverDistanceMax, t),
+                    cursorDistance: lerp(config.cursorDistanceMin, config.cursorDistanceMax, t),
                     baseLineAlpha: lerp(config.baseLineAlphaMin, config.baseLineAlphaMax, t),
+                    pointerAlpha: lerp(config.pointerAlphaMin, config.pointerAlphaMax, t),
                     particleColor: colorLerp(config.particleColorStart, config.particleColorEnd, t),
                     lineColor: colorLerp(config.lineColorStart, config.lineColorEnd, t),
                     bgTintAlpha: lerp(config.backgroundTintMin, config.backgroundTintMax, t)
@@ -2906,7 +2921,7 @@
             }
 
             function connectParticles(runtime) {
-                const maxDist = runtime.linkDistance;
+                const maxDist = pointer.active ? runtime.hoverDistance : runtime.linkDistance;
                 const maxDistSq = maxDist * maxDist;
                 const grid = buildSpatialGrid(maxDist);
 
@@ -2942,6 +2957,25 @@
                             }
                         }
                     }
+                }
+            }
+
+            function connectPointer(runtime) {
+                if (!pointer.active || prefersReducedMotion) return;
+
+                const maxDistSq = runtime.cursorDistance * runtime.cursorDistance;
+
+                for (let i = 0; i < particles.length; i++) {
+                    const p = particles[i];
+                    const dSq = distSq(pointer.x, pointer.y, p.x, p.y);
+                    if (dSq >= maxDistSq) continue;
+
+                    const d = Math.sqrt(dSq);
+                    const fade = getHeroFade(p.x, p.y);
+                    const alpha = (1 - d / runtime.cursorDistance) * runtime.pointerAlpha * fade * p.depth;
+                    const lineWidth = lerp(0.95, 1.2, scrollProgress);
+
+                    drawLine(pointer.x, pointer.y, p.x, p.y, alpha, lineWidth);
                 }
             }
 
@@ -2984,8 +3018,15 @@
                 }
 
                 connectParticles(currentRuntime);
+                connectPointer(currentRuntime);
 
                 animationFrameId = requestAnimationFrame(animate);
+            }
+
+            function handlePointerMove(event) {
+                pointer.x = event.clientX;
+                pointer.y = event.clientY;
+                pointer.active = true;
             }
 
             function handleVisibilityChange() {
@@ -3013,7 +3054,18 @@
             function initializeParticles() {
                 particles.length = 0;
                 syncParticleCount();
+                pointer.x = width * 0.5;
+                pointer.y = height * 0.5;
             }
+
+            window.addEventListener("pointermove", handlePointerMove, { passive: true });
+            window.addEventListener("pointerdown", handlePointerMove, { passive: true });
+            window.addEventListener("pointerleave", () => {
+                pointer.active = false;
+            });
+            window.addEventListener("blur", () => {
+                pointer.active = false;
+            });
             window.addEventListener("resize", handleResize, { passive: true });
             window.addEventListener("scroll", () => {
                 updateScrollProgress();
