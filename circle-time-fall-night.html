@@ -7102,168 +7102,419 @@
             var canvas = document.getElementById("autumnnight-sky");
             if (!canvas) return;
             var ctx = canvas.getContext("2d");
-            var reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-            var W = 0, H = 0, dpr = 1;
+            var motionPreference = window.matchMedia("(prefers-reduced-motion: reduce)");
+            var reducedMotion = motionPreference.matches;
+            var W = 0, H = 0, dpr = 1, lastTime = 0;
             var stars = [];
+            var clouds = [];
             var leaves = [];
-            var trees = [];
-            var LEAF_COLORS = ["#b9482c", "#d46a2e", "#e08b32", "#a83d31", "#c18732", "#7b3328"];
+            var settledLeaves = [];
+            var treeBands = [[], []];
+            var TAU = Math.PI * 2;
+            var LEAF_COLORS = ["#a83c2d", "#c8512f", "#db732d", "#e39835", "#b57a2e", "#76302a"];
+            var CANOPY_COLORS = ["#2d1b20", "#34201e", "#3a221d", "#291b22", "#40251d"];
+
+            function randomBetween(min, max) {
+                return min + Math.random() * (max - min);
+            }
+
+            /* The ridges and trees share this exact curve, so trunks can never float. */
+            function terrainY(x, layer) {
+                if (layer === 0) {
+                    return H * 0.735
+                        - Math.sin(x * 0.0062 + 0.8) * H * 0.027
+                        - Math.sin(x * 0.014 + 2.1) * H * 0.010;
+                }
+                return H * 0.875
+                    - Math.sin(x * 0.0048 + 2.4) * H * 0.035
+                    - Math.sin(x * 0.013 + 0.4) * H * 0.012
+                    - Math.cos(x * 0.024) * H * 0.004;
+            }
 
             function resize() {
                 dpr = Math.min(2, Math.max(1, window.devicePixelRatio || 1));
-                W = window.innerWidth;
-                H = window.innerHeight;
+                W = Math.max(1, window.innerWidth);
+                H = Math.max(1, window.innerHeight);
                 canvas.width = Math.floor(W * dpr);
                 canvas.height = Math.floor(H * dpr);
+                canvas.style.width = W + "px";
+                canvas.style.height = H + "px";
                 ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
                 buildStars();
-                buildLeaves();
+                buildClouds();
                 buildTrees();
+                buildLeaves();
+                buildSettledLeaves();
             }
 
             function buildStars() {
-                var count = Math.round((W * H) / 15000);
+                var count = Math.max(45, Math.round((W * H) / 12500));
                 stars = [];
                 for (var i = 0; i < count; i++) {
+                    var bright = Math.random() > 0.88;
                     stars.push({
                         x: Math.random() * W,
-                        y: Math.random() * H * 0.62,
-                        r: Math.random() * 1.05 + 0.2,
-                        base: Math.random() * 0.38 + 0.16,
-                        tw: Math.random() * Math.PI * 2,
-                        sp: Math.random() * 0.018 + 0.004
+                        y: Math.random() * H * 0.66,
+                        r: bright ? randomBetween(0.9, 1.55) : randomBetween(0.2, 0.9),
+                        base: bright ? randomBetween(0.42, 0.7) : randomBetween(0.12, 0.4),
+                        phase: Math.random() * TAU,
+                        speed: randomBetween(0.00045, 0.0015)
                     });
                 }
             }
 
-            function makeLeaf(fromTop) {
-                var slow = reducedMotion ? 0.35 : 1;
+            function buildClouds() {
+                var count = Math.max(5, Math.ceil(W / 380));
+                clouds = [];
+                for (var i = 0; i < count; i++) {
+                    clouds.push({
+                        x: (i / count) * (W + 300) - 160 + randomBetween(-80, 80),
+                        y: randomBetween(H * 0.1, H * 0.46),
+                        width: randomBetween(170, 330),
+                        height: randomBetween(22, 50),
+                        speed: randomBetween(0.004, 0.012),
+                        alpha: randomBetween(0.025, 0.075),
+                        phase: Math.random() * TAU
+                    });
+                }
+            }
+
+            function buildTrees() {
+                treeBands = [[], []];
+                var configs = [
+                    { spacing: 48, minH: 0.055, maxH: 0.13, width: 11 },
+                    { spacing: 82, minH: 0.09, maxH: 0.19, width: 18 }
+                ];
+
+                for (var layer = 0; layer < configs.length; layer++) {
+                    var config = configs[layer];
+                    var count = Math.ceil(W / config.spacing) + 3;
+                    for (var i = -1; i < count; i++) {
+                        var height = H * randomBetween(config.minH, config.maxH);
+                        var width = randomBetween(config.width * 0.72, config.width * 1.35);
+                        var clusters = [];
+                        var clusterCount = 7 + ((Math.random() * 5) | 0);
+                        for (var c = 0; c < clusterCount; c++) {
+                            clusters.push({
+                                x: randomBetween(-width * 1.25, width * 1.25),
+                                y: randomBetween(-height * 0.86, -height * 0.44),
+                                rx: randomBetween(width * 0.55, width * 1.15),
+                                ry: randomBetween(width * 0.45, width * 0.92),
+                                tone: (Math.random() * CANOPY_COLORS.length) | 0
+                            });
+                        }
+                        treeBands[layer].push({
+                            x: i * config.spacing + randomBetween(-config.spacing * 0.36, config.spacing * 0.36),
+                            h: height,
+                            w: width,
+                            bare: Math.random() > (layer === 0 ? 0.72 : 0.62),
+                            lean: randomBetween(-0.07, 0.07),
+                            phase: Math.random() * TAU,
+                            clusters: clusters
+                        });
+                    }
+                }
+            }
+
+            function makeLeaf(entering) {
+                var depth = randomBetween(0.25, 1);
+                var startFromSide = entering && Math.random() > 0.52;
                 return {
-                    x: Math.random() * W,
-                    y: fromTop ? -24 - Math.random() * 80 : Math.random() * H,
-                    size: Math.random() * 5 + 5,
-                    fall: (Math.random() * 0.42 + 0.28) * slow,
-                    drift: (Math.random() * 0.28 + 0.12) * slow,
-                    sway: Math.random() * 0.75 + 0.3,
-                    phase: Math.random() * Math.PI * 2,
-                    freq: Math.random() * 0.012 + 0.004,
-                    angle: Math.random() * Math.PI * 2,
-                    spin: (Math.random() * 0.022 - 0.011) * slow,
+                    x: entering ? (startFromSide ? -35 : Math.random() * W) : Math.random() * W,
+                    y: entering ? (startFromSide ? randomBetween(-20, H * 0.62) : randomBetween(-90, -18)) : randomBetween(-40, H + 20),
+                    depth: depth,
+                    size: randomBetween(4.2, 8.6) * (0.62 + depth * 0.56),
+                    vx: randomBetween(0.14, 0.42) * (0.55 + depth),
+                    vy: randomBetween(0.18, 0.54) * (0.7 + depth * 0.5),
+                    sway: randomBetween(0.18, 0.72) * (0.5 + depth),
+                    phase: Math.random() * TAU,
+                    flutterSpeed: randomBetween(0.0025, 0.007),
+                    angle: Math.random() * TAU,
+                    spin: randomBetween(-0.0015, 0.0015),
                     color: LEAF_COLORS[(Math.random() * LEAF_COLORS.length) | 0],
-                    kind: Math.random() > 0.45 ? "maple" : "oval",
-                    alpha: Math.random() * 0.38 + 0.5
+                    kind: Math.random() > 0.43 ? "maple" : "oval",
+                    alpha: randomBetween(0.38, 0.82) * (0.65 + depth * 0.35)
                 };
             }
 
             function buildLeaves() {
-                var divisor = reducedMotion ? 62000 : 30000;
-                var count = Math.max(12, Math.round((W * H) / divisor));
+                var divisor = reducedMotion ? 92000 : 23000;
+                var count = Math.max(reducedMotion ? 6 : 18, Math.round((W * H) / divisor));
                 leaves = [];
                 for (var i = 0; i < count; i++) leaves.push(makeLeaf(false));
             }
 
-            function buildTrees() {
-                var count = Math.max(14, Math.ceil(W / 70));
-                trees = [];
+            function buildSettledLeaves() {
+                var count = Math.max(36, Math.ceil(W / 18));
+                settledLeaves = [];
                 for (var i = 0; i < count; i++) {
-                    trees.push({
-                        x: (i / Math.max(1, count - 1)) * W + (Math.random() - 0.5) * 34,
-                        h: H * (Math.random() * 0.09 + 0.09),
-                        w: Math.random() * 18 + 15,
-                        bare: Math.random() > 0.58
+                    var x = randomBetween(-10, W + 10);
+                    settledLeaves.push({
+                        x: x,
+                        y: terrainY(x, 1) - randomBetween(0, 5),
+                        size: randomBetween(1.4, 3.8),
+                        color: LEAF_COLORS[(Math.random() * LEAF_COLORS.length) | 0],
+                        alpha: randomBetween(0.2, 0.48),
+                        angle: Math.random() * TAU
                     });
                 }
             }
 
             function moonPos() {
-                return { x: W * 0.81, y: H * 0.16, R: Math.min(W, H) * 0.064 };
+                return { x: W * 0.81, y: H * 0.17, R: Math.min(W, H) * 0.068 };
+            }
+
+            function drawSky(time) {
+                var sky = ctx.createLinearGradient(0, 0, 0, H);
+                sky.addColorStop(0, "#06070c");
+                sky.addColorStop(0.31, "#12111c");
+                sky.addColorStop(0.58, "#261722");
+                sky.addColorStop(0.8, "#43241f");
+                sky.addColorStop(1, "#70401f");
+                ctx.fillStyle = sky;
+                ctx.fillRect(0, 0, W, H);
+
+                var glow = ctx.createRadialGradient(W * 0.58, H * 0.78, 0, W * 0.58, H * 0.78, Math.max(W, H) * 0.72);
+                glow.addColorStop(0, "rgba(191,79,37,0.13)");
+                glow.addColorStop(0.5, "rgba(92,42,38,0.045)");
+                glow.addColorStop(1, "rgba(0,0,0,0)");
+                ctx.fillStyle = glow;
+                ctx.fillRect(0, 0, W, H);
+
+                ctx.globalCompositeOperation = "lighter";
+                for (var i = 0; i < stars.length; i++) {
+                    var star = stars[i];
+                    var twinkle = reducedMotion ? 0 : Math.sin(time * star.speed + star.phase) * 0.17;
+                    var alpha = Math.max(0.05, star.base + twinkle);
+                    ctx.fillStyle = "rgba(255,236,205," + alpha.toFixed(3) + ")";
+                    ctx.beginPath();
+                    ctx.arc(star.x, star.y, star.r, 0, TAU);
+                    ctx.fill();
+                    if (star.r > 1.1) {
+                        ctx.strokeStyle = "rgba(255,222,180," + (alpha * 0.35).toFixed(3) + ")";
+                        ctx.lineWidth = 0.55;
+                        ctx.beginPath();
+                        ctx.moveTo(star.x - star.r * 2.2, star.y);
+                        ctx.lineTo(star.x + star.r * 2.2, star.y);
+                        ctx.moveTo(star.x, star.y - star.r * 2.2);
+                        ctx.lineTo(star.x, star.y + star.r * 2.2);
+                        ctx.stroke();
+                    }
+                }
+                ctx.globalCompositeOperation = "source-over";
             }
 
             function drawHarvestMoon() {
-                var mo = moonPos();
-                var halo = ctx.createRadialGradient(mo.x, mo.y, mo.R * 0.2, mo.x, mo.y, mo.R * 4.8);
-                halo.addColorStop(0, "rgba(255,190,91,0.34)");
-                halo.addColorStop(0.45, "rgba(211,105,50,0.12)");
+                var moon = moonPos();
+                var halo = ctx.createRadialGradient(moon.x, moon.y, moon.R * 0.2, moon.x, moon.y, moon.R * 5.2);
+                halo.addColorStop(0, "rgba(255,195,104,0.36)");
+                halo.addColorStop(0.34, "rgba(222,119,58,0.15)");
                 halo.addColorStop(1, "rgba(145,66,38,0)");
                 ctx.fillStyle = halo;
                 ctx.beginPath();
-                ctx.arc(mo.x, mo.y, mo.R * 4.8, 0, Math.PI * 2);
+                ctx.arc(moon.x, moon.y, moon.R * 5.2, 0, TAU);
                 ctx.fill();
 
-                var disc = ctx.createRadialGradient(mo.x - mo.R * 0.28, mo.y - mo.R * 0.3, 0, mo.x, mo.y, mo.R);
-                disc.addColorStop(0, "rgba(255,238,177,0.99)");
-                disc.addColorStop(0.66, "rgba(241,174,82,0.96)");
-                disc.addColorStop(1, "rgba(188,88,48,0.72)");
+                ctx.save();
+                ctx.shadowColor = "rgba(255,187,91,0.46)";
+                ctx.shadowBlur = moon.R * 0.42;
+                var disc = ctx.createRadialGradient(moon.x - moon.R * 0.3, moon.y - moon.R * 0.32, moon.R * 0.02, moon.x, moon.y, moon.R);
+                disc.addColorStop(0, "#fff0bd");
+                disc.addColorStop(0.58, "#efb05b");
+                disc.addColorStop(0.9, "#cf713c");
+                disc.addColorStop(1, "rgba(168,70,43,0.88)");
                 ctx.fillStyle = disc;
                 ctx.beginPath();
-                ctx.arc(mo.x, mo.y, mo.R, 0, Math.PI * 2);
+                ctx.arc(moon.x, moon.y, moon.R, 0, TAU);
                 ctx.fill();
+                ctx.restore();
 
-                ctx.fillStyle = "rgba(117,57,35,0.14)";
-                var craters = [[-0.28, -0.12, 0.15], [0.26, -0.24, 0.1], [0.18, 0.24, 0.18], [-0.38, 0.32, 0.08]];
+                var craters = [
+                    [-0.3, -0.12, 0.16, 0.12], [0.26, -0.25, 0.11, 0.08],
+                    [0.2, 0.24, 0.2, 0.14], [-0.4, 0.34, 0.09, 0.07],
+                    [0.04, 0.02, 0.08, 0.05], [-0.08, -0.4, 0.06, 0.04]
+                ];
+                ctx.fillStyle = "rgba(111,52,39,0.13)";
                 for (var i = 0; i < craters.length; i++) {
                     ctx.beginPath();
-                    ctx.arc(mo.x + craters[i][0] * mo.R, mo.y + craters[i][1] * mo.R, craters[i][2] * mo.R, 0, Math.PI * 2);
+                    ctx.ellipse(
+                        moon.x + craters[i][0] * moon.R,
+                        moon.y + craters[i][1] * moon.R,
+                        craters[i][2] * moon.R,
+                        craters[i][3] * moon.R,
+                        -0.3, 0, TAU
+                    );
                     ctx.fill();
                 }
             }
 
-            function drawWoodland() {
-                var horizon = H * 0.88;
-                var ridge = ctx.createLinearGradient(0, horizon - H * 0.12, 0, H);
-                ridge.addColorStop(0, "rgba(31,25,22,0.82)");
-                ridge.addColorStop(1, "rgba(8,8,9,0.98)");
-                ctx.fillStyle = ridge;
+            function drawClouds(time, delta) {
+                ctx.save();
+                ctx.globalCompositeOperation = "screen";
+                for (var i = 0; i < clouds.length; i++) {
+                    var cloud = clouds[i];
+                    if (!reducedMotion) cloud.x += cloud.speed * delta;
+                    if (cloud.x - cloud.width > W + 60) cloud.x = -cloud.width - 80;
+
+                    var pulse = 0.86 + Math.sin(time * 0.00014 + cloud.phase) * 0.14;
+                    var cloudGlow = ctx.createLinearGradient(cloud.x - cloud.width * 0.5, cloud.y, cloud.x + cloud.width * 0.5, cloud.y);
+                    cloudGlow.addColorStop(0, "rgba(87,70,85,0)");
+                    cloudGlow.addColorStop(0.35, "rgba(136,102,111," + (cloud.alpha * pulse).toFixed(3) + ")");
+                    cloudGlow.addColorStop(0.7, "rgba(117,83,95," + (cloud.alpha * 0.8 * pulse).toFixed(3) + ")");
+                    cloudGlow.addColorStop(1, "rgba(78,62,77,0)");
+                    ctx.fillStyle = cloudGlow;
+                    ctx.beginPath();
+                    ctx.ellipse(cloud.x, cloud.y, cloud.width * 0.5, cloud.height * 0.5, 0, 0, TAU);
+                    ctx.ellipse(cloud.x - cloud.width * 0.18, cloud.y - cloud.height * 0.2, cloud.width * 0.29, cloud.height * 0.42, -0.08, 0, TAU);
+                    ctx.ellipse(cloud.x + cloud.width * 0.2, cloud.y + cloud.height * 0.08, cloud.width * 0.31, cloud.height * 0.36, 0.06, 0, TAU);
+                    ctx.fill();
+                }
+                ctx.restore();
+            }
+
+            function drawHill(layer) {
+                var top = layer === 0 ? H * 0.67 : H * 0.79;
+                var hill = ctx.createLinearGradient(0, top, 0, H);
+                if (layer === 0) {
+                    hill.addColorStop(0, "rgba(31,27,33,0.9)");
+                    hill.addColorStop(1, "rgba(20,17,21,0.98)");
+                } else {
+                    hill.addColorStop(0, "rgba(24,20,18,0.97)");
+                    hill.addColorStop(0.42, "rgba(15,14,13,0.99)");
+                    hill.addColorStop(1, "#09090a");
+                }
+                ctx.fillStyle = hill;
                 ctx.beginPath();
                 ctx.moveTo(0, H);
-                ctx.lineTo(0, horizon);
-                for (var x = 0; x <= W + 30; x += 30) {
-                    ctx.lineTo(x, horizon - Math.sin(x * 0.011) * H * 0.018 - Math.sin(x * 0.027) * H * 0.009);
-                }
+                ctx.lineTo(0, terrainY(0, layer));
+                for (var x = 8; x <= W + 8; x += 8) ctx.lineTo(x, terrainY(x, layer));
                 ctx.lineTo(W, H);
                 ctx.closePath();
                 ctx.fill();
 
-                ctx.strokeStyle = "rgba(12,12,12,0.92)";
-                ctx.fillStyle = "rgba(12,13,12,0.94)";
+                ctx.strokeStyle = layer === 0 ? "rgba(159,91,57,0.12)" : "rgba(210,119,53,0.12)";
+                ctx.lineWidth = layer === 0 ? 1 : 1.2;
+                ctx.beginPath();
+                ctx.moveTo(0, terrainY(0, layer));
+                for (var sx = 8; sx <= W + 8; sx += 8) ctx.lineTo(sx, terrainY(sx, layer));
+                ctx.stroke();
+            }
+
+            function drawTree(tree, layer, time) {
+                var baseY = terrainY(tree.x, layer) + 3;
+                var branchSway = reducedMotion ? 0 : Math.sin(time * 0.00042 + tree.phase) * (layer === 0 ? 0.006 : 0.009);
+                var trunkColor = layer === 0 ? "rgba(19,17,21,0.9)" : "rgba(11,10,10,0.98)";
+                var trunkWidth = Math.max(layer === 0 ? 1.4 : 2.1, tree.w * 0.16);
+                var topX = (tree.lean + branchSway) * tree.h;
+
+                ctx.save();
+                ctx.translate(tree.x, baseY);
+                ctx.fillStyle = trunkColor;
+                ctx.beginPath();
+                ctx.moveTo(-trunkWidth * 0.82, 4);
+                ctx.lineTo(-trunkWidth * 0.34, -tree.h * 0.91);
+                ctx.lineTo(topX, -tree.h);
+                ctx.lineTo(trunkWidth * 0.4, -tree.h * 0.91);
+                ctx.lineTo(trunkWidth * 0.86, 4);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.strokeStyle = trunkColor;
                 ctx.lineCap = "round";
-                for (var i = 0; i < trees.length; i++) {
-                    var tree = trees[i];
-                    var baseY = horizon + 4;
-                    ctx.lineWidth = Math.max(2, tree.w * 0.14);
-                    ctx.beginPath();
-                    ctx.moveTo(tree.x, baseY);
-                    ctx.lineTo(tree.x, baseY - tree.h);
-                    if (tree.bare) {
-                        ctx.moveTo(tree.x, baseY - tree.h * 0.7);
-                        ctx.lineTo(tree.x - tree.w * 0.75, baseY - tree.h * 0.94);
-                        ctx.moveTo(tree.x, baseY - tree.h * 0.62);
-                        ctx.lineTo(tree.x + tree.w * 0.9, baseY - tree.h * 0.87);
-                        ctx.moveTo(tree.x - tree.w * 0.3, baseY - tree.h * 0.82);
-                        ctx.lineTo(tree.x - tree.w * 0.62, baseY - tree.h);
-                        ctx.moveTo(tree.x + tree.w * 0.34, baseY - tree.h * 0.75);
-                        ctx.lineTo(tree.x + tree.w * 0.62, baseY - tree.h * 0.98);
-                        ctx.stroke();
-                    } else {
-                        ctx.stroke();
+                ctx.lineWidth = Math.max(1, trunkWidth * 0.52);
+                ctx.beginPath();
+                ctx.moveTo(0, -tree.h * 0.72);
+                ctx.quadraticCurveTo(-tree.w * 0.38, -tree.h * 0.83, -tree.w * 0.9, -tree.h * 0.91);
+                ctx.moveTo(tree.w * 0.08, -tree.h * 0.62);
+                ctx.quadraticCurveTo(tree.w * 0.42, -tree.h * 0.77, tree.w * 1.02, -tree.h * 0.85);
+                ctx.moveTo(-tree.w * 0.12, -tree.h * 0.48);
+                ctx.quadraticCurveTo(-tree.w * 0.6, -tree.h * 0.61, -tree.w * 1.12, -tree.h * 0.7);
+                ctx.moveTo(tree.w * 0.05, -tree.h * 0.79);
+                ctx.lineTo(tree.w * 0.62, -tree.h * 0.96);
+                ctx.stroke();
+
+                if (!tree.bare) {
+                    for (var c = 0; c < tree.clusters.length; c++) {
+                        var cluster = tree.clusters[c];
+                        var color = CANOPY_COLORS[cluster.tone];
+                        ctx.fillStyle = color;
+                        ctx.globalAlpha = layer === 0 ? 0.72 : 0.9;
                         ctx.beginPath();
-                        ctx.arc(tree.x, baseY - tree.h * 0.83, tree.w, 0, Math.PI * 2);
-                        ctx.arc(tree.x - tree.w * 0.68, baseY - tree.h * 0.7, tree.w * 0.72, 0, Math.PI * 2);
-                        ctx.arc(tree.x + tree.w * 0.7, baseY - tree.h * 0.68, tree.w * 0.78, 0, Math.PI * 2);
+                        ctx.ellipse(
+                            cluster.x + branchSway * tree.h * 0.7,
+                            cluster.y,
+                            cluster.rx,
+                            cluster.ry,
+                            branchSway * 4,
+                            0,
+                            TAU
+                        );
                         ctx.fill();
                     }
+                } else {
+                    ctx.lineWidth = Math.max(0.65, trunkWidth * 0.28);
+                    ctx.beginPath();
+                    ctx.moveTo(-tree.w * 0.9, -tree.h * 0.91);
+                    ctx.lineTo(-tree.w * 1.22, -tree.h * 1.02);
+                    ctx.moveTo(tree.w * 1.02, -tree.h * 0.85);
+                    ctx.lineTo(tree.w * 1.28, -tree.h * 0.94);
+                    ctx.moveTo(tree.w * 0.62, -tree.h * 0.96);
+                    ctx.lineTo(tree.w * 0.78, -tree.h * 1.06);
+                    ctx.stroke();
+                }
+
+                /* Roots overlap the ridge slightly to visually lock the tree into the ground. */
+                ctx.globalAlpha = 1;
+                ctx.lineWidth = Math.max(0.75, trunkWidth * 0.34);
+                ctx.beginPath();
+                ctx.moveTo(-trunkWidth * 0.35, 0);
+                ctx.quadraticCurveTo(-tree.w * 0.55, 1, -tree.w * 0.9, 5);
+                ctx.moveTo(trunkWidth * 0.35, 0);
+                ctx.quadraticCurveTo(tree.w * 0.5, 1, tree.w * 0.88, 5);
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            function drawTreeBand(layer, time) {
+                var band = treeBands[layer];
+                for (var i = 0; i < band.length; i++) drawTree(band[i], layer, time);
+            }
+
+            function drawAtmosphere() {
+                var mist = ctx.createLinearGradient(0, H * 0.62, 0, H * 0.9);
+                mist.addColorStop(0, "rgba(151,98,88,0)");
+                mist.addColorStop(0.46, "rgba(151,98,88,0.07)");
+                mist.addColorStop(0.72, "rgba(66,48,54,0.035)");
+                mist.addColorStop(1, "rgba(20,18,21,0)");
+                ctx.fillStyle = mist;
+                ctx.fillRect(0, H * 0.58, W, H * 0.36);
+            }
+
+            function drawSettledLeaves() {
+                for (var i = 0; i < settledLeaves.length; i++) {
+                    var leaf = settledLeaves[i];
+                    ctx.save();
+                    ctx.translate(leaf.x, leaf.y);
+                    ctx.rotate(leaf.angle);
+                    ctx.globalAlpha = leaf.alpha;
+                    ctx.fillStyle = leaf.color;
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, leaf.size, leaf.size * 0.38, 0, 0, TAU);
+                    ctx.fill();
+                    ctx.restore();
                 }
             }
 
-            function drawLeaf(leaf) {
+            function drawLeaf(leaf, time) {
+                var flutter = Math.cos(time * leaf.flutterSpeed + leaf.phase);
                 ctx.save();
                 ctx.translate(leaf.x, leaf.y);
                 ctx.rotate(leaf.angle);
+                ctx.scale(1, 0.36 + Math.abs(flutter) * 0.64);
                 ctx.globalAlpha = leaf.alpha;
                 ctx.fillStyle = leaf.color;
-                ctx.strokeStyle = "rgba(67,30,21,0.58)";
-                ctx.lineWidth = 0.75;
+                ctx.strokeStyle = "rgba(62,27,20,0.58)";
+                ctx.lineWidth = Math.max(0.55, leaf.depth * 0.85);
                 ctx.beginPath();
                 if (leaf.kind === "maple") {
                     var s = leaf.size;
@@ -7291,53 +7542,76 @@
                 ctx.stroke();
                 ctx.beginPath();
                 ctx.moveTo(0, -leaf.size * 0.62);
-                ctx.lineTo(0, leaf.size * 1.25);
+                ctx.lineTo(0, leaf.size * 1.2);
                 ctx.stroke();
                 ctx.restore();
             }
 
-            function frame() {
-                var sky = ctx.createLinearGradient(0, 0, 0, H);
-                sky.addColorStop(0.00, "#08070b");
-                sky.addColorStop(0.33, "#15111d");
-                sky.addColorStop(0.62, "#2a1722");
-                sky.addColorStop(0.84, "#42251f");
-                sky.addColorStop(1.00, "#6b3922");
-                ctx.globalCompositeOperation = "source-over";
-                ctx.globalAlpha = 1;
-                ctx.fillStyle = sky;
+            function updateAndDrawLeaves(time, delta, foreground) {
+                var step = Math.min(2, delta / 16.667);
+                var motionScale = reducedMotion ? 0.18 : 1;
+                var gust = (0.18 + Math.sin(time * 0.00034) * 0.11 + Math.sin(time * 0.00009 + 1.7) * 0.08) * motionScale;
+
+                for (var i = 0; i < leaves.length; i++) {
+                    var leaf = leaves[i];
+                    var isForeground = leaf.depth >= 0.58;
+                    if (isForeground !== foreground) continue;
+
+                    leaf.phase += leaf.flutterSpeed * delta * motionScale;
+                    leaf.x += (leaf.vx * motionScale + gust * leaf.depth + Math.sin(leaf.phase) * leaf.sway * motionScale) * step;
+                    leaf.y += leaf.vy * motionScale * step;
+                    leaf.angle += leaf.spin * delta * motionScale;
+
+                    if (leaf.y > H + 45 || leaf.x > W + 60 || leaf.x < -80) {
+                        leaves[i] = makeLeaf(true);
+                        leaf = leaves[i];
+                    }
+                    drawLeaf(leaf, time);
+                }
+            }
+
+            function drawVignette() {
+                var vignette = ctx.createRadialGradient(W * 0.5, H * 0.46, Math.min(W, H) * 0.18, W * 0.5, H * 0.5, Math.max(W, H) * 0.74);
+                vignette.addColorStop(0, "rgba(0,0,0,0)");
+                vignette.addColorStop(0.7, "rgba(3,3,7,0.08)");
+                vignette.addColorStop(1, "rgba(1,2,5,0.42)");
+                ctx.fillStyle = vignette;
                 ctx.fillRect(0, 0, W, H);
+            }
 
-                ctx.globalCompositeOperation = "lighter";
-                for (var i = 0; i < stars.length; i++) {
-                    var star = stars[i];
-                    star.tw += star.sp;
-                    var starAlpha = Math.max(0, star.base + Math.sin(star.tw) * 0.2);
-                    ctx.beginPath();
-                    ctx.fillStyle = "rgba(255,235,202," + starAlpha.toFixed(3) + ")";
-                    ctx.arc(star.x, star.y, star.r, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-                drawHarvestMoon();
+            function frame(time) {
+                if (!time) time = performance.now();
+                var delta = lastTime ? Math.min(40, time - lastTime) : 16.667;
+                lastTime = time;
 
+                ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+                ctx.globalAlpha = 1;
                 ctx.globalCompositeOperation = "source-over";
-                drawWoodland();
+                drawSky(time);
+                drawHarvestMoon();
+                drawClouds(time, delta);
 
-                for (var l = 0; l < leaves.length; l++) {
-                    var leaf = leaves[l];
-                    leaf.phase += leaf.freq;
-                    leaf.y += leaf.fall;
-                    leaf.x += leaf.drift + Math.sin(leaf.phase) * leaf.sway;
-                    leaf.angle += leaf.spin;
-                    if (leaf.y > H + 30 || leaf.x > W + 45) leaves[l] = makeLeaf(true);
-                    drawLeaf(leaves[l]);
-                }
+                updateAndDrawLeaves(time, delta, false);
+                drawHill(0);
+                drawTreeBand(0, time);
+                drawAtmosphere();
+                drawHill(1);
+                drawTreeBand(1, time);
+                drawSettledLeaves();
+                updateAndDrawLeaves(time, delta, true);
+                drawVignette();
 
                 ctx.globalAlpha = 1;
                 requestAnimationFrame(frame);
             }
 
-            window.addEventListener("resize", resize);
+            window.addEventListener("resize", resize, { passive: true });
+            if (motionPreference.addEventListener) {
+                motionPreference.addEventListener("change", function (event) {
+                    reducedMotion = event.matches;
+                    buildLeaves();
+                });
+            }
             resize();
             requestAnimationFrame(frame);
         })();
